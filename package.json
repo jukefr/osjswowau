@@ -1,0 +1,19 @@
+{
+  "name": "addons-wow",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.0",
+    "bluebird": "^3.7.2",
+    "chalk": "^4.1.0",
+    "cheerio": "^1.0.0-rc.3",
+    "glob-promise": "^3.4.0",
+    "md5-file": "^5.0.0",
+    "moment": "^2.29.1",
+    "puppeteer": "^5.5.0",
+    "puppeteer-extra": "^3.1.15",
+    "puppeteer-extra-plugin-stealth": "^2.6.5",
+    "unzipper": "^0.10.11"
+  }
+}
