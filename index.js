@@ -4,7 +4,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
-const { firstStart, cleanTmps } = require("./utils");
+const { firstStart, cleanTmps, template } = require("./utils");
 const { elvuiLogic } = require("./elvui");
 const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
@@ -29,6 +29,7 @@ const main = async () => {
     );
 
     const config = new Conf({
+      defaults: template,
       migrations: {
         ">=1.2.5": (store) => {
           store.set("concurrency", 5);

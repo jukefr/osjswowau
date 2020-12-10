@@ -8,8 +8,8 @@ const cleanTmps = async (cfg) => {
 };
 
 const firstStart = (config) => {
-  if (Object.keys(config.store).length === 0) {
-    config.set(template);
+  console.log(config.store)
+  if (config.get('fresh')) {
     log.info("First run detected.");
     log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
     process.platform === "win32" &&
@@ -24,6 +24,7 @@ const firstStart = (config) => {
     log.info(
       "hint: if your configuration keeps getting reset you are probably making syntax errors"
     );
+    config.set('fresh', false)
     process.exit(1);
   }
 };
