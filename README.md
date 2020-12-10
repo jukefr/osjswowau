@@ -3,7 +3,7 @@ open source javascript wow addon updater
 
 it's also cross-platform (windows/linux/macos)
 
-![demo gif](https://i.imgur.com/aBorq7v.gif)
+![demo gif](https://i.imgur.com/EtrLDCI.gif)
 
 ## requirements
 - node.js lts or newer

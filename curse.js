@@ -16,6 +16,7 @@ const curseLogic = async (b, name, multibar, cfg) => {
           return true;
         }
       }
+      cfg.debug && log.debug(name, "waiting", cfg.polling, "ms");
       await delay(cfg.polling);
     }
   };

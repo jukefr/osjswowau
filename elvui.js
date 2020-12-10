@@ -22,8 +22,6 @@ const elvuiLogic = async (b, name = "elvui", multibar, cfg) => {
       cfg.debug && log.debug(name, "waiting", cfg.polling, "ms");
       await delay(cfg.polling);
     }
-
-    return `${chalk.red(name)}`;
   };
 
   bar.update(1, { filename: name });
