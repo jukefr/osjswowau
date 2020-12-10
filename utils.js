@@ -8,7 +8,6 @@ const cleanTmps = async (cfg) => {
 };
 
 const firstStart = (config) => {
-  console.log(config.store)
   if (config.get('fresh')) {
     log.info("First run detected.");
     log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
@@ -30,13 +29,14 @@ const firstStart = (config) => {
 };
 
 const template = {
+  fresh: true,
+  debug: false,
   realpath:
     "/home/user/Games/world-of-warcraft/drive_c/Program Files (x86)/World of Warcraft/_retail_/Interface/AddOns",
   timeout: 30000, // will depend on your connection and state of sites
   polling: 1000, // recommended
   waitAfterNavig: 2000, // will depend on your connection and state of sites
   tmp: "./tmp",
-  debug: false,
   addons: {
     curse: [
       "azeroth-auto-pilot",
