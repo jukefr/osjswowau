@@ -3,7 +3,11 @@ open source javascript wow addon updater
 
 it's also cross-platform (windows/linux/macos)
 
-![demo gif](https://i.imgur.com/EtrLDCI.gif)
+manage a single config file and always be up to date everywhere
+
+it also supports concurrent threads (configurable, defaults to 5)
+
+![demo gif](https://i.imgur.com/jDoBdsh.gif)
 
 ## requirements
 - node.js lts or newer
@@ -71,7 +75,7 @@ https://www.curseforge.com/wow/addons/plater-nameplates/...
 ### elvui and elvui addons
 having an `elvui` array in your `addons` config section will automatically enable updating elvui
 
-you need the addon id as they do not provide names ( or hashes :( )
+you need the addon id as they do not provide names ( or hashes 😞 )
 ```
 https://www.tukui.org/addons.php?id=137
 -> 137
