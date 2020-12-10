@@ -29,6 +29,28 @@ const curseLogic = async (b, name, multibar, cfg) => {
   await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`);
 
   await delay(cfg.waitAfterNavig);
+
+  const fileList = await page.$$eval(".listing tbody tr", (list) =>
+    list.map(
+      (x) => x.querySelector("td:nth-child(2) > a:nth-child(1)").innerText
+    )
+  );
+
+  const index = fileList.reduceRight(
+    (a, c, i) => (c.includes("classic") || c.includes("Classic") ? a : i),
+    false
+  );
+
+  await Promise.all([
+    page.$eval(
+      `.listing > tbody:nth-child(2) > tr:nth-child(${
+        index + 1
+      }) > td:nth-child(2) > a:nth-child(1)`,
+      (x) => x.click()
+    ),
+    page.waitForNavigation(),
+  ]);
+
   const filepath = await page.$eval(
     "div.flex-row:nth-child(1) > span:nth-child(2)",
     (x) => x.innerText
@@ -43,12 +65,14 @@ const curseLogic = async (b, name, multibar, cfg) => {
       (x) => x.click()
     ),
     wait(`${cfg.tmp}/${filepath}`, md5),
-  ]).catch((err) => log.error(name, err));
+  ]);
 
   bar.update(2, { filename: filepath });
 
   await new Promise((resolve, reject) =>
     createReadStream(`${cfg.tmp}/${filepath}`)
+      .on("close", (err) => (err ? reject(err) : resolve()))
+      .on("error", (err) => (err ? reject(err) : resolve()))
       .pipe(unzipper.Extract({ path: cfg.realpath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))

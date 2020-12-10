@@ -9,18 +9,22 @@ const { elvuiLogic } = require("./elvui");
 const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
+const chalk = require("chalk");
 updateNotifier({ pkg, updateCheckInterval: 1000 * 60 * 60 }).notify();
 puppeteer.use(StealthPlugin());
+
+let debugState = false;
 
 const main = async () => {
   try {
     const multibar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
-        format: "[{bar}] {percentage}% | {value}/{total} | {filename}",
+        format: "{filename} - [{bar}] - step {value}/{total}",
         hideCursor: true,
+        barsize: 20,
       },
-      cliProgress.Presets.shades_grey
+      cliProgress.Presets.legacy
     );
 
     const config = new Conf({});
@@ -32,12 +36,26 @@ const main = async () => {
       tmp: join(dirname(config.path), config.get("tmp")),
     };
 
+    debugState = cfg.debug;
+
+    process.on("unhandledRejection", (reason, promise) => {
+      console.log(
+        chalk.red(
+          "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
+        )
+      );
+      console.log(chalk.red("Enable debug mode to learn more."));
+      cfg.debug &&
+        console.log("Unhandled Rejection at:", reason.stack || reason);
+      process.exit(1);
+    });
+
     return puppeteer.launch({ headless: !cfg.debug }).then(async (browser) => {
       await Promise.map(
         cfg.addons.curse,
         (addon) => curseLogic(browser, addon, multibar, cfg),
         {
-          concurrency: process.platform === "win32" ? 1 : 2, // WARN: windows buggy...
+          concurrency: 1, // WARN: stupid bugs...
         }
       );
 
@@ -57,23 +75,14 @@ const main = async () => {
   } catch (err) {
     console.log(
       chalk.red(
-        "Something went terribly wrong. Usually timeouts and a simple re-run of the command fixes it."
+        "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
       )
     );
     console.log(chalk.red("Enable debug mode to learn more."));
+    debugState && console.log("Unhandled Rejection at:", err.stack || err);
     process.exit(1);
   }
 };
-
-process.on("unhandledRejection", (reason, promise) => {
-  console.log(
-    chalk.red(
-      "Something went terribly wrong. Usually timeouts and a simple re-run of the command fixes it."
-    )
-  );
-  console.log(chalk.red("Enable debug mode to learn more."));
-  process.exit(1);
-});
 
 module.exports = main;
 

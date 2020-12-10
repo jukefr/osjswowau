@@ -57,12 +57,14 @@ const elvuiLogic = async (b, name = "elvui", multibar, cfg) => {
         x.click()
       ),
       wait(null, name),
-    ]).catch((err) => log.error(name, err));
+    ]);
   }
   bar.update(2, { filename: basename(filename) });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
+      .on("close", (err) => (err ? reject(err) : resolve()))
+      .on("error", (err) => (err ? reject(err) : resolve()))
       .pipe(unzipper.Extract({ path: cfg.realpath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
