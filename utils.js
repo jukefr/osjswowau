@@ -34,6 +34,9 @@ const firstStart = (config) => {
         '"firstStart": false'
       )} in the configuration file.`
     );
+    log.info(
+      "hint: if your configuration keeps getting reset you are probably making syntax errors"
+    );
     process.exit(1);
   }
 };

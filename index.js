@@ -10,7 +10,7 @@ const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
-const notifier = updateNotifier({ pkg, updateCheckInterval: 30000});
+const notifier = updateNotifier({ pkg, updateCheckInterval: 30000 });
 puppeteer.use(StealthPlugin());
 
 let debugState = false;
@@ -48,7 +48,7 @@ const main = async () => {
       cfg.debug &&
         console.log("Unhandled Rejection at:", reason.stack || reason);
       if (notifier.update) {
-        notifier.notify()
+        notifier.notify();
       }
       process.exit(1);
     });
@@ -73,11 +73,10 @@ const main = async () => {
       }
       return Promise.all([browser.close(), multibar.stop()]).then(async () => {
         if (notifier.update) {
-          notifier.notify()
+          notifier.notify();
         }
-          return cleanTmps(cfg)
-          }
-      );
+        return cleanTmps(cfg);
+      });
     });
   } catch (err) {
     console.log(
@@ -88,7 +87,7 @@ const main = async () => {
     console.log(chalk.red("Enable debug mode to learn more."));
     debugState && console.log("Unhandled Rejection at:", err.stack || err);
     if (notifier.update) {
-      notifier.notify()
+      notifier.notify();
     }
     process.exit(1);
   }
