@@ -21,7 +21,7 @@ const main = async () => {
     const multibar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
-        format: "{filename} - [{bar}] - step {value}/{total}",
+        format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
         hideCursor: true,
         barsize: 20,
       },
@@ -60,12 +60,36 @@ const main = async () => {
       process.exit(1);
     });
 
+    let chromiumBar;
+    // TODO: find an automatic way to do this....
+    const getRevision = (p) => {
+      if (p === "linux") return "812859";
+      if (p === "mac") return "812851";
+      if (p === "win64") return "812899";
+      if (p === "win32") return "812888";
+      throw new Error("unsupported OS currently sorry");
+    };
+
+    const browserFetcher = puppeteer.createBrowserFetcher();
+    const revisionInfo = await browserFetcher.download(
+      getRevision(process.platform),
+      (downloaded, total) => {
+        if (!chromiumBar) {
+          chromiumBar = multibar.create(total, 0, { filename: "chromium" });
+        }
+        chromiumBar.update(downloaded);
+      }
+    );
+
+    chromiumBar && multibar.remove(chromiumBar);
+
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
       maxConcurrency: cfg.concurrency,
       puppeteer,
       puppeteerOptions: {
         headless: !cfg.debug,
+        executablePath: revisionInfo.executablePath,
       },
     });
 

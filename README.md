@@ -17,7 +17,7 @@ it also supports concurrent threads (configurable, defaults to 5)
 - elvui + elvui addons **(latest, no hashes available)**
 
 ## try it out
-**you will need to run it twice (it downloads 130Mb of chromium on every execution, so slow connections may favor installation and usage section)**
+chromium (~100MB) will be downloaded only once, even if you install it globally afterwards
 
 the first time we bootstrap the configuration file and kill the process to give you some time to edit it
 ```bash
