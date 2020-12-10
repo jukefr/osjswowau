@@ -1010,6 +1010,13 @@ pupa@^2.1.1:
   dependencies:
     escape-goat "^2.0.0"
 
+puppeteer-cluster@^0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/puppeteer-cluster/-/puppeteer-cluster-0.22.0.tgz#4ab214671f414f15ad6a94a4b61ed0b4172e86e6"
+  integrity sha512-hmydtMwfVM+idFIDzS8OXetnujHGre7RY3BGL+3njy9+r8Dcu3VALkZHfuBEPf6byKssTCgzxU1BvLczifXd5w==
+  dependencies:
+    debug "^4.1.1"
+
 puppeteer-extra-plugin-stealth@^2.6.5:
   version "2.6.5"
   resolved "https://registry.yarnpkg.com/puppeteer-extra-plugin-stealth/-/puppeteer-extra-plugin-stealth-2.6.5.tgz#3bc57f32eb04da7fac7f75a6301ff9a904366935"

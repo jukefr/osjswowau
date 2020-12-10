@@ -5,7 +5,7 @@ const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const { log, delay } = require("./utils");
 
-const curseLogic = async (b, name, multibar, cfg) => {
+const curseLogic = async (page, name, multibar, cfg) => {
   const bar = multibar.create(3, 0, { filename: name });
   const wait = async (f, m) => {
     const start = moment();
@@ -22,7 +22,6 @@ const curseLogic = async (b, name, multibar, cfg) => {
   };
 
   bar.update(1, { filename: name });
-  const page = await b.newPage();
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: cfg.tmp,

@@ -6,7 +6,7 @@ const glob = require("glob-promise");
 const { basename } = require("path");
 const { log, delay } = require("./utils");
 
-const elvuiLogic = async (b, name = "elvui", multibar, cfg) => {
+const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
   const bar = multibar.create(3, 0);
   const wait = async (f, m) => {
     const start = moment();
@@ -26,7 +26,6 @@ const elvuiLogic = async (b, name = "elvui", multibar, cfg) => {
 
   bar.update(1, { filename: name });
 
-  const page = await b.newPage();
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${cfg.tmp}\-${name}`,

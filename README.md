@@ -76,6 +76,3 @@ you need the addon id as they do not provide names ( or hashes :( )
 https://www.tukui.org/addons.php?id=137
 -> 137
 ```
-
-## future
-once more error cases are handled i can start to parallelize (currently implemented on *nix)

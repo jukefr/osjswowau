@@ -10,6 +10,7 @@ const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
+const { Cluster } = require("puppeteer-cluster");
 const notifier = updateNotifier({ pkg, updateCheckInterval: 30000 });
 puppeteer.use(StealthPlugin());
 
@@ -27,7 +28,13 @@ const main = async () => {
       cliProgress.Presets.legacy
     );
 
-    const config = new Conf({});
+    const config = new Conf({
+      migrations: {
+        ">=1.2.5": (store) => {
+          store.set("concurrency", 5);
+        },
+      },
+    });
 
     firstStart(config);
 
@@ -53,31 +60,34 @@ const main = async () => {
       process.exit(1);
     });
 
-    return puppeteer.launch({ headless: !cfg.debug }).then(async (browser) => {
-      await Promise.map(
-        cfg.addons.curse,
-        (addon) => curseLogic(browser, addon, multibar, cfg),
-        {
-          concurrency: 1, // WARN: stupid bugs...
-        }
-      );
-
-      if (cfg.addons.elvui) {
-        await Promise.map(
-          ["elvui", ...cfg.addons.elvui],
-          (addon) => elvuiLogic(browser, addon, multibar, cfg),
-          {
-            concurrency: 1, // TODO: chrome "page" set download really is on instance level
-          }
-        );
-      }
-      return Promise.all([browser.close(), multibar.stop()]).then(async () => {
-        if (notifier.update) {
-          notifier.notify();
-        }
-        return cleanTmps(cfg);
-      });
+    const cluster = await Cluster.launch({
+      concurrency: Cluster.CONCURRENCY_BROWSER,
+      maxConcurrency: cfg.concurrency,
+      puppeteer,
+      puppeteerOptions: {
+        headless: !cfg.debug,
+      },
     });
+
+    await cluster.task(async ({ page, data: { type, value } }) => {
+      if (type === "elvui") return elvuiLogic(page, value, multibar, cfg);
+      if (type === "curse") return curseLogic(page, value, multibar, cfg);
+    });
+
+    cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
+    if (cfg.addons.elvui) {
+      [...cfg.addons.elvui, "elvui"].map((value) =>
+        cluster.queue({ type: "elvui", value })
+      );
+    }
+
+    await cluster.idle();
+    await cleanTmps(cfg);
+    await multibar.stop();
+    if (notifier.update) {
+      notifier.notify();
+    }
+    return cluster.close();
   } catch (err) {
     console.log(
       chalk.red(
