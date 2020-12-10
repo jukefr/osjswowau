@@ -8,8 +8,6 @@ const cleanTmps = async (cfg) => {
 };
 
 const firstStart = (config) => {
-  if (config.get("firstStart") === false) return false;
-
   if (Object.keys(config.store).length === 0) {
     config.set(template);
     log.info("First run detected.");
@@ -23,11 +21,6 @@ const firstStart = (config) => {
     process.platform === "win32" &&
       log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
     log.info();
-    log.info(
-      `If this is a mistake you can set ${chalk.yellow(
-        '"firstStart": false'
-      )} in the configuration file.`
-    );
     log.info(
       "hint: if your configuration keeps getting reset you are probably making syntax errors"
     );
