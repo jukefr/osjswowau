@@ -65,8 +65,7 @@ const main = async () => {
     const getRevision = (p) => {
       if (p === "linux") return "812859";
       if (p === "mac") return "812851";
-      if (p === "win64") return "812899";
-      if (p === "win32") return "812888";
+      if ((p === "win64") || (p === "win32")) return "812899";
       throw new Error("unsupported OS currently sorry");
     };
 
