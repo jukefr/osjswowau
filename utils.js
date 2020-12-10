@@ -4,7 +4,8 @@ const glob = require("glob-promise");
 
 const cleanTmps = async (cfg) => {
   const tmps = await glob(`${cfg.tmp}\*`);
-  return Promise.map(tmps, async (d) => rmdir(d, { recursive: true }));
+  const queue = tmps.map(t => rmdir(t, { recursive: true }))
+  return Promise.all(queue);
 };
 
 const firstStart = (config) => {
