@@ -12,12 +12,6 @@ const firstStart = (config) => {
 
   if (Object.keys(config.store).length === 0) {
     config.set(template);
-  }
-
-  if (
-    config.get("realpath") ===
-    "/home/user/Games/world-of-warcraft/drive_c/Program Files (x86)/World of Warcraft/_retail_/Interface/AddOns"
-  ) {
     log.info("First run detected.");
     log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
     process.platform === "win32" &&
