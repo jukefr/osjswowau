@@ -1,4 +1,3 @@
-Promise = require("bluebird");
 const { existsSync, createReadStream } = require("fs");
 const moment = require("moment");
 const md5File = require("md5-file");

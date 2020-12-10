@@ -1,4 +1,3 @@
-Promise = require("bluebird");
 const { existsSync, createReadStream, statSync } = require("fs");
 const moment = require("moment");
 const unzipper = require("unzipper");

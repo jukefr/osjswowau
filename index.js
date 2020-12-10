@@ -1,4 +1,3 @@
-Promise = require("bluebird");
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const Conf = require("conf");

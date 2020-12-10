@@ -5,7 +5,7 @@
     "url": "https://github.com/jukefr/osjswowau.git"
   },
   "description": "a cross-platform cli utility to update your World of Warcraft addons",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "main": "index.js",
   "license": "GPL-3.0",
   "bin": "./osjswowau",
@@ -19,7 +19,6 @@
   ],
   "dependencies": {
     "axios": "^0.21.0",
-    "bluebird": "^3.7.2",
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",
     "conf": "^7.1.2",
