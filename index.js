@@ -78,7 +78,6 @@ const main = async () => {
     const exec = await download({
       revision: getRevision(process.platform),
       onProgress: ({ percent, transferred, total }) => {
-        console.log(percent, transferred, total)
         if (!debugState) {
           if (!chromiumBar) {
             return (chromiumBar = multibar.create(total, 0, {
