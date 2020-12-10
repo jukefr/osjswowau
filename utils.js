@@ -1,6 +1,7 @@
 const chalk = require("chalk");
 const { rmdir } = require("fs").promises;
 const glob = require("glob-promise");
+const {inspect} = require('util')
 
 const cleanTmps = async (cfg) => {
   const tmps = await glob(`${cfg.tmp}\*`);
@@ -66,7 +67,7 @@ const delay = (d) =>
 const log = {
   error: (...msg) => console.log(chalk.red(...msg)),
   info: (...msg) => console.log(chalk.green(...msg)),
-  debug: (...msg) => console.log(chalk.blue(...msg)),
+  debug: (...msg) => console.log(chalk.blue(inspect(...msg))),
 };
 
 module.exports = {

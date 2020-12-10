@@ -5,8 +5,11 @@ const glob = require("glob-promise");
 const { basename } = require("path");
 const { log, delay } = require("./utils");
 
+
 const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
-  const bar = multibar.create(3, 0);
+  let bar
+
+  cfg.debug || (bar = multibar.create(3, 0));
   const wait = async (f, m) => {
     const start = moment();
     let size;
@@ -23,7 +26,7 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
     }
   };
 
-  bar.update(1, { filename: name });
+  cfg.debug || bar.update(1, { filename: name });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
@@ -55,7 +58,7 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
       wait(null, name),
     ]);
   }
-  bar.update(2, { filename: basename(filename) });
+  cfg.debug || bar.update(2, { filename: basename(filename) });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -66,7 +69,7 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  bar.update(3, { filename: basename(filename) });
+  cfg.debug || bar.update(3, { filename: basename(filename) });
   return page.close();
 };
 

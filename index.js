@@ -1,40 +1,47 @@
 const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
-const { firstStart, cleanTmps, template } = require("./utils");
+const { firstStart, cleanTmps, template, log} = require("./utils");
 const { elvuiLogic } = require("./elvui");
 const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
 const { Cluster } = require("puppeteer-cluster");
-const notifier = updateNotifier({ pkg, updateCheckInterval: 30000 });
+const notifier = updateNotifier({ pkg, updateCheckInterval: 15000 });
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
-let debugState = false;
 
 const main = async () => {
-  try {
-    const multibar = new cliProgress.MultiBar(
-      {
-        clearOnComplete: false,
-        format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
-        hideCursor: true,
-        barsize: 20,
-      },
-      cliProgress.Presets.legacy
-    );
+  let debugState = false;
+  let multibar
 
+  try {
     const config = new Conf({
       defaults: template,
       migrations: {
         ">=1.2.5": (store) => {
           store.set("concurrency", 5);
         },
+        ">=2.1.8": (store) => {
+          store.set("headless", true);
+        },
       },
     });
+
+    debugState = config.get('debug');
+
+    (debugState) || (multibar = new cliProgress.MultiBar(
+        {
+          clearOnComplete: false,
+          format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
+          hideCursor: true,
+          barsize: 20,
+        },
+        cliProgress.Presets.legacy
+    ));
 
     firstStart(config);
 
@@ -43,7 +50,6 @@ const main = async () => {
       tmp: join(dirname(config.path), config.get("tmp")),
     };
 
-    debugState = cfg.debug;
 
     process.on("unhandledRejection", (reason, promise) => {
       console.log(
@@ -65,25 +71,45 @@ const main = async () => {
       maxConcurrency: cfg.concurrency,
       puppeteer,
       puppeteerOptions: {
-        headless: !cfg.debug,
+        headless: cfg.headless,
       },
     });
 
-    await cluster.task(async ({ page, data: { type, value } }) => {
+    cluster.on('taskerror', (err, data) => {
+      console.log(
+          chalk.red(
+              "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
+          )
+      );
+      console.log(chalk.red("Enable debug mode to learn more."));
+      cfg.debug &&
+      console.log(chalk.red("queue task failed"), err.stack || err);
+      if (notifier.update) {
+        notifier.notify();
+      }
+      process.exit(1);
+    });
+
+
+    cfg.debug && log.debug({cluster})
+
+    await cluster.task(({ page, data: { type, value } }) => {
       if (type === "elvui") return elvuiLogic(page, value, multibar, cfg);
       if (type === "curse") return curseLogic(page, value, multibar, cfg);
     });
 
-    cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
+    (cfg.addons.curse).map((value) => cluster.queue({ type: "curse", value }));
     if (cfg.addons.elvui) {
       [...cfg.addons.elvui, "elvui"].map((value) =>
         cluster.queue({ type: "elvui", value })
       );
     }
 
+    cfg.debug && log.debug(cluster.jobQueue)
+
     await cluster.idle();
     await cleanTmps(cfg);
-    await multibar.stop();
+    (debugState) && await multibar.stop();
     if (notifier.update) {
       notifier.notify();
     }

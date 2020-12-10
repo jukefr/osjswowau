@@ -4,8 +4,11 @@ const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const { log, delay } = require("./utils");
 
+
 const curseLogic = async (page, name, multibar, cfg) => {
-  const bar = multibar.create(3, 0, { filename: name });
+  let bar
+
+  cfg.debug || (bar = multibar.create(3, 0, { filename: name }));
   const wait = async (f, m) => {
     const start = moment();
     while (moment().diff(start, "ms") < cfg.timeout) {
@@ -20,7 +23,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
     }
   };
 
-  bar.update(1, { filename: name });
+  cfg.debug || bar.update(1, { filename: name });
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: cfg.tmp,
@@ -34,13 +37,15 @@ const curseLogic = async (page, name, multibar, cfg) => {
       (x) => x.querySelector("td:nth-child(2) > a:nth-child(1)").innerText
     )
   );
+  cfg.debug && log.debug({fileList})
 
   const index = fileList.reduceRight(
     (a, c, i) => (c.includes("classic") || c.includes("Classic") ? a : i),
     false
   );
+  cfg.debug && log.debug({index})
 
-  await Promise.all([
+  const d2 = await Promise.all([
     page.$eval(
       `.listing > tbody:nth-child(2) > tr:nth-child(${
         index + 1
@@ -49,6 +54,8 @@ const curseLogic = async (page, name, multibar, cfg) => {
     ),
     page.waitForNavigation(),
   ]);
+  cfg.debug && log.debug({d2})
+
 
   const filepath = await page.$eval(
     "div.flex-row:nth-child(1) > span:nth-child(2)",
@@ -58,6 +65,8 @@ const curseLogic = async (page, name, multibar, cfg) => {
     "div.flex:nth-child(7) > span:nth-child(2)",
     (x) => x.innerText
   );
+  cfg.debug && log.debug({filepath, md5})
+
   await Promise.all([
     page.$eval(
       "article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
@@ -66,7 +75,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
     wait(`${cfg.tmp}/${filepath}`, md5),
   ]);
 
-  bar.update(2, { filename: filepath });
+  cfg.debug || bar.update(2, { filename: filepath });
 
   await new Promise((resolve, reject) =>
     createReadStream(`${cfg.tmp}/${filepath}`)
@@ -77,7 +86,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  bar.update(3, { filename: filepath });
+  cfg.debug || bar.update(3, { filename: filepath });
   return page.close();
 };
 

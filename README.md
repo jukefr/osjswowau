@@ -45,6 +45,8 @@ the first time you use the app it will tell you where the configuration file is 
     waitAfterNavig: 2000, // will depend on your connection and state of sites
     tmp: "./tmp",
     debug: false,
+    concurrency: 5,
+    headless: true,
     addons: {
         curse: [
             "azeroth-auto-pilot",
