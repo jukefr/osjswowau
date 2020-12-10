@@ -60,35 +60,12 @@ const main = async () => {
       process.exit(1);
     });
 
-    let chromiumBar;
-    // TODO: find an automatic way to do this....
-    const getRevision = (p) => {
-      if (p === "linux") return "812859";
-      if (p === "mac") return "812851";
-      if ((p === "win64") || (p === "win32")) return "812899";
-      throw new Error("unsupported OS currently sorry");
-    };
-
-    const browserFetcher = puppeteer.createBrowserFetcher();
-    const revisionInfo = await browserFetcher.download(
-      getRevision(process.platform),
-      (downloaded, total) => {
-        if (!chromiumBar) {
-          chromiumBar = multibar.create(total, 0, { filename: "chromium" });
-        }
-        chromiumBar.update(downloaded);
-      }
-    );
-
-    chromiumBar && multibar.remove(chromiumBar);
-
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
       maxConcurrency: cfg.concurrency,
       puppeteer,
       puppeteerOptions: {
         headless: !cfg.debug,
-        executablePath: revisionInfo.executablePath,
       },
     });
 
@@ -118,7 +95,7 @@ const main = async () => {
       )
     );
     console.log(chalk.red("Enable debug mode to learn more."));
-    debugState && console.log("Unhandled Rejection at:", err.stack || err);
+    console.log(chalk.red("Trace."), err.stack || err);
     if (notifier.update) {
       notifier.notify();
     }
