@@ -5,9 +5,8 @@ const glob = require("glob-promise");
 const { basename } = require("path");
 const { log, delay } = require("./utils");
 
-
 const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
-  let bar
+  let bar;
 
   cfg.debug || (bar = multibar.create(3, 0));
   const wait = async (f, m) => {

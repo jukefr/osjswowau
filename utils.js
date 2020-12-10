@@ -1,16 +1,16 @@
 const chalk = require("chalk");
 const { rmdir } = require("fs").promises;
 const glob = require("glob-promise");
-const {inspect} = require('util')
+const { inspect } = require("util");
 
 const cleanTmps = async (cfg) => {
   const tmps = await glob(`${cfg.tmp}\*`);
-  const queue = tmps.map(t => rmdir(t, { recursive: true }))
+  const queue = tmps.map((t) => rmdir(t, { recursive: true }));
   return Promise.all(queue);
 };
 
 const firstStart = (config) => {
-  if (config.get('fresh')) {
+  if (config.get("fresh")) {
     log.info("First run detected.");
     log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
     process.platform === "win32" &&
@@ -25,7 +25,7 @@ const firstStart = (config) => {
     log.info(
       "hint: if your configuration keeps getting reset you are probably making syntax errors"
     );
-    config.set('fresh', false)
+    config.set("fresh", false);
     process.exit(1);
   }
 };

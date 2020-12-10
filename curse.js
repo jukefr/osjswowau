@@ -4,9 +4,8 @@ const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const { log, delay } = require("./utils");
 
-
 const curseLogic = async (page, name, multibar, cfg) => {
-  let bar
+  let bar;
 
   cfg.debug || (bar = multibar.create(3, 0, { filename: name }));
   const wait = async (f, m) => {
@@ -37,13 +36,13 @@ const curseLogic = async (page, name, multibar, cfg) => {
       (x) => x.querySelector("td:nth-child(2) > a:nth-child(1)").innerText
     )
   );
-  cfg.debug && log.debug({fileList})
+  cfg.debug && log.debug({ fileList });
 
   const index = fileList.reduceRight(
     (a, c, i) => (c.includes("classic") || c.includes("Classic") ? a : i),
     false
   );
-  cfg.debug && log.debug({index})
+  cfg.debug && log.debug({ index });
 
   const d2 = await Promise.all([
     page.$eval(
@@ -54,8 +53,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
     ),
     page.waitForNavigation(),
   ]);
-  cfg.debug && log.debug({d2})
-
+  cfg.debug && log.debug({ d2 });
 
   const filepath = await page.$eval(
     "div.flex-row:nth-child(1) > span:nth-child(2)",
@@ -65,7 +63,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
     "div.flex:nth-child(7) > span:nth-child(2)",
     (x) => x.innerText
   );
-  cfg.debug && log.debug({filepath, md5})
+  cfg.debug && log.debug({ filepath, md5 });
 
   await Promise.all([
     page.$eval(
