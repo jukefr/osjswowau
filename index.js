@@ -8,6 +8,7 @@ const { curseLogic } = require("./curse");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
+const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const notifier = updateNotifier({ pkg, updateCheckInterval: 15000 });
 const download = require("download-chromium");
@@ -102,6 +103,7 @@ const main = async () => {
       puppeteerOptions: {
         headless: cfg.headless,
         executablePath: exec,
+        args: existsSync("/.dockerenv") ? ["--no-sandbox"] : [],
       },
     });
 
