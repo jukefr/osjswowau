@@ -18,7 +18,9 @@
   "keywords": [
     "wow",
     "addon",
-    "updater"
+    "updater",
+    "shadowlands",
+    "blizzard"
   ],
   "dependencies": {
     "chalk": "^4.1.0",
