@@ -19,7 +19,7 @@ it also supports concurrent threads (configurable, defaults to 5)
 - tsm + tsm_apphelper **(latest, no hashes available)**
 
 ## try it out
-**you will need to run it twice (it downloads 130Mb of chromium on every execution, so slow connections may favor installation and usage section)**
+you will need to run it twice
 
 the first time we bootstrap the configuration file and kill the process to give you some time to edit it
 ```bash
@@ -64,3 +64,8 @@ simply having the `addons.tsm` key set to true will update them
 you still need the [corresponding software though](https://www.tradeskillmaster.com/install)... (for now)
 
 on linux just run it in the same wine container with the same prefix and everything should work just fine
+
+
+## todo
+- [ ] tukui support (currently supports the addons but not tukui itself)
+- [ ] classic/retail toggle (currently only retail)
