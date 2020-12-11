@@ -1,4 +1,4 @@
-# osjswowau
+# 🕹️ osjswowau
 open source javascript wow addon updater
 
 it's also cross-platform (windows/linux/macos/docker)
