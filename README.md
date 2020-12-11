@@ -1,11 +1,12 @@
 # osjswowau
 open source javascript wow addon updater
 
-it's also cross-platform (windows/linux/macos)
+it's also cross-platform (windows/linux/macos/docker)
 
-manage a single config file and always be up to date everywhere
+manage a **single configuration file** and always be up to date everywhere
 
 it also supports concurrent threads (configurable, defaults to 5)
+
 
 ![demo gif](https://i.imgur.com/AxjnSHu.gif)
 
