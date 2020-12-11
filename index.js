@@ -23,14 +23,6 @@ const main = async () => {
   try {
     const config = new Conf({
       defaults: template,
-      migrations: {
-        ">=1.2.5": (store) => {
-          store.set("concurrency", 5);
-        },
-        ">=2.1.8": (store) => {
-          store.set("headless", true);
-        },
-      },
     });
 
     debugState = config.get("debug");

@@ -26,7 +26,7 @@ $ npx osjswowau
 
 ## installation and usage
 ```bash
-$ npm i -g osjswowau # might need --unsafe-perm on linux
+$ npm i -g osjswowau
 
 $ osjswowaus
 ```

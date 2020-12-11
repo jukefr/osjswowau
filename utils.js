@@ -39,6 +39,8 @@ const template = {
   polling: 1000, // recommended
   waitAfterNavig: 2000, // will depend on your connection and state of sites
   tmp: "./tmp",
+  headless: true,
+  concurrency: 5,
   addons: {
     curse: [
       "azeroth-auto-pilot",
