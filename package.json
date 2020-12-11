@@ -10,7 +10,10 @@
   "license": "GPL-3.0",
   "bin": "./osjswowau",
   "scripts": {
-    "start": "./osjswowau"
+    "start": "./osjswowau",
+    "bump:patch": "npm version patch --force && npm publish",
+    "bump:minor": "npm version minor --force && npm publish",
+    "bump:major": "npm version major --force && npm publish"
   },
   "keywords": [
     "wow",
