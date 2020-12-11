@@ -54,8 +54,7 @@ const main = async () => {
         )
       );
       console.log(chalk.red("Enable debug mode to learn more."));
-      cfg.debug &&
-        console.log("unhandled rejection", reason.stack || reason);
+      cfg.debug && console.log("unhandled rejection", reason.stack || reason);
       if (notifier.update) {
         notifier.notify();
       }
