@@ -67,7 +67,15 @@ const curseLogic = async (page, name, multibar, cfg) => {
 
   await Promise.all([
     page.$eval(
-      "article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
+        "article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
+        (x) => x.click()
+    ),
+    page.waitForNavigation(),
+  ]);
+
+  await Promise.all([
+    page.$eval(
+      "p.text-sm > a:nth-child(1)",
       (x) => x.click()
     ),
     wait(`${cfg.tmp}/${filepath}`, md5),

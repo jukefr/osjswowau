@@ -4,7 +4,7 @@
 - manage a **single configuration file** and always be up to date everywhere
 - it's also **cross-platform** (windows/linux/macos/docker)
 - supports **concurrent** threads (configurable, defaults to 5)
-- 
+- emulates a real user session so no rate limiting (hopefully)
 
 ![demo gif](https://i.imgur.com/AxjnSHu.gif)
 
@@ -13,8 +13,11 @@
 
 ## supported addon sources
 - **curse addons** (latest, md5 checked)
+- **wowinterface addons** (latest, no hashes available)
 - **tukui** + **elvui** + **tukui addons** (latest, no hashes available)
 - **tsm** + **tsm_apphelper** (latest, no hashes available)
+
+wowinterface is overall faster than curse for now
 
 ## try it out
 you will need to run it twice
@@ -49,6 +52,16 @@ https://www.curseforge.com/wow/addons/plater-nameplates/...
 -> plater-nameplates
 ```
 
+### wowinterface addons
+wowinterface addon names go in `addons.wowinterface`
+
+simply use the name of the extension from the wowinterface site
+```
+https://www.wowinterface.com/downloads/info24608-Hekili.html
+https://www.wowinterface.com/downloads/download24608-Hekili
+-> 24608-Hekili
+```
+
 ### tukui, elvui and tukui addons
 having an `elvui: true` array in your `addons.tukui` config section will enable updating elvui
 
@@ -71,5 +84,5 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 
 ## todo
-- [ ] wowinterface
+- [ ] github
 - [ ] classic/retail toggle (currently only retail)

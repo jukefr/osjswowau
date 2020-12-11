@@ -102,6 +102,11 @@ const schema = {
         },
       },
       tsm: { type: "boolean", default: false },
+      wowinterface: {
+        type: "array",
+        items: { type: "string", default: "24608-Hekili" },
+        default: []
+      }
     },
     default: {},
   },

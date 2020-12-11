@@ -6,6 +6,7 @@ const { firstStart, cleanTmps, schema, log, migrations } = require("./_utils");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
+const { wowinterfaceLogic } = require("./_wowinterface");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
@@ -20,6 +21,7 @@ const main = async () => {
   let debugState = false;
   let multibar;
   let chromiumBar;
+  let cfg
 
   try {
     const config = new Conf({
@@ -42,7 +44,7 @@ const main = async () => {
 
     firstStart(config);
 
-    const cfg = {
+    cfg = {
       ...config.store,
       tmp: join(dirname(config.path), config.get("tmp")),
     };
@@ -58,7 +60,6 @@ const main = async () => {
       if (notifier.update) {
         notifier.notify();
       }
-      process.exit(1);
     });
 
     // TODO: find an automatic way to do this....
@@ -112,7 +113,6 @@ const main = async () => {
       if (notifier.update) {
         notifier.notify();
       }
-      process.exit(1);
     });
 
     cfg.debug && log.debug({ cluster });
@@ -121,18 +121,24 @@ const main = async () => {
       if (type === "tukui") return tukuiLogic(page, value, multibar, cfg);
       if (type === "curse") return curseLogic(page, value, multibar, cfg);
       if (type === "tsm") return tsmLogic(page, value, multibar, cfg);
+      if (type === "wowinterface") return wowinterfaceLogic(page, value, multibar, cfg);
     });
 
-    if (cfg.addons.curse) {
+    if (cfg.addons.curse && Array.isArray(cfg.addons.curse) && cfg.addons.curse.length !== 0) {
       cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
     }
+
+    if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
+      cfg.addons.wowinterface.map((value) => cluster.queue({ type: "wowinterface", value }));
+    }
+
 
     if (cfg.addons.tukui) {
       if (cfg.addons.tukui.tukui)
         cluster.queue({ type: "tukui", value: "tukui" });
       if (cfg.addons.tukui.elvui)
         cluster.queue({ type: "tukui", value: "elvui" });
-      if (cfg.addons.tukui.addons)
+      if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
         [...cfg.addons.tukui.addons].map((value) =>
           cluster.queue({ type: "tukui", value })
         );
@@ -144,11 +150,7 @@ const main = async () => {
     cfg.debug && log.debug(cluster.jobQueue);
 
     await cluster.idle();
-    await cleanTmps(cfg);
     debugState || (await multibar.stop());
-    if (notifier.update) {
-      notifier.notify();
-    }
     return cluster.close();
   } catch (err) {
     console.log(
@@ -158,10 +160,11 @@ const main = async () => {
     );
     console.log(chalk.red("Enable debug mode to learn more."));
     console.log(chalk.red("trace"), err.stack || err);
+  } finally {
+    await cleanTmps(cfg);
     if (notifier.update) {
       notifier.notify();
     }
-    process.exit(1);
   }
 };
 
