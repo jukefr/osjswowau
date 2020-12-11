@@ -6,7 +6,7 @@
 - supports **concurrent** threads (configurable, defaults to 5)
 - emulates a real user session so no rate limiting (hopefully)
 
-![demo gif](https://i.imgur.com/AxjnSHu.gif)
+![demo gif](https://i.imgur.com/Xsu2Jz0.gif)
 
 ## requirements
 - node.js lts or newer
@@ -16,8 +16,6 @@
 - **wowinterface addons** (latest, no hashes available)
 - **tukui** + **elvui** + **tukui addons** (latest, no hashes available)
 - **tsm** + **tsm_apphelper** (latest, no hashes available)
-
-wowinterface is overall faster than curse for now
 
 ## try it out
 you will need to run it twice
@@ -84,5 +82,4 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 
 ## todo
-- [ ] github
 - [ ] classic/retail toggle (currently only retail)
