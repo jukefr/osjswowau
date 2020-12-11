@@ -41,7 +41,7 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
     await page.goto(`https://www.tukui.org/addons.php?id=${name}`);
   }
 
-  await delay(cfg.waitAfterNavig);
+  await delay(cfg.delay);
 
   let filename;
   if (name === "elvui") {
@@ -63,7 +63,7 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
     createReadStream(filename)
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
-      .pipe(unzipper.Extract({ path: cfg.realpath }))
+      .pipe(unzipper.Extract({ path: cfg.addonPath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
   );

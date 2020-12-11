@@ -33,40 +33,13 @@ $ osjswowaus
 ```
 
 ## how to configure
-if you have a good connection the default settings (except `realpath` and `addons`) will probably work fine for you
+if you have a good connection the default settings (except `addonPath` and `addons`) will probably work fine for you
 
 otherwise, try simply re-running the command a second time before changing the configuration, web pages can be finicky...
 
 the first time you use the app it will tell you where the configuration file is located
-```js
-{
-    realpath: "/home/user/Games/world-of-warcraft/drive_c/Program Files (x86)/World of Warcraft/_retail_/Interface/AddOns",
-    timeout: 30000, // will depend on your connection and state of sites
-    polling: 1000, // recommended
-    waitAfterNavig: 2000, // will depend on your connection and state of sites
-    tmp: "./tmp",
-    debug: false,
-    concurrency: 5,
-    headless: true,
-    addons: {
-        curse: [
-            "azeroth-auto-pilot",
-            "big-wigs",
-            "details",
-            "little-wigs",
-            "pawn",
-            "plater-nameplates",
-            "weakauras-2",
-        ],
-        elvui: [ // having this section will enable elvui updates (or not)
-            137, // floating combat text
-            38, // shadow and light
-            3, // addon skins
-        ],
-        tsm: true // enable or disablr tsm+apphelper update
-    },
-}
-```
+
+`utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
 
 ### curse addons
 simply use the name of the extension from the curse site

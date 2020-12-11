@@ -29,7 +29,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
   });
   await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`);
 
-  await delay(cfg.waitAfterNavig);
+  await delay(cfg.delay);
 
   const fileList = await page.$$eval(".listing tbody tr", (list) =>
     list.map(
@@ -79,7 +79,7 @@ const curseLogic = async (page, name, multibar, cfg) => {
     createReadStream(`${cfg.tmp}/${filepath}`)
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
-      .pipe(unzipper.Extract({ path: cfg.realpath }))
+      .pipe(unzipper.Extract({ path: cfg.addonPath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
   );

@@ -34,7 +34,7 @@ const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
 
   await page.goto("https://www.tradeskillmaster.com/install");
 
-  await delay(cfg.waitAfterNavig);
+  await delay(cfg.delay);
 
   let filename;
   if (name === "tsm") {
@@ -58,7 +58,7 @@ const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
     createReadStream(filename)
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
-      .pipe(unzipper.Extract({ path: cfg.realpath }))
+      .pipe(unzipper.Extract({ path: cfg.addonPath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
   );

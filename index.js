@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer-extra");
 const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
-const { firstStart, cleanTmps, template, log } = require("./utils");
+const { firstStart, cleanTmps, schema, log, migrations } = require("./utils");
 const { elvuiLogic } = require("./elvui");
 const { curseLogic } = require("./curse");
 const { tsmLogic } = require("./tsm");
@@ -23,24 +23,8 @@ const main = async () => {
 
   try {
     const config = new Conf({
-      defaults: template,
-      migrations: {
-        ">=2.2.0": (store) => {
-          const curse = store.get("addons.curse");
-          const removeTSM = curse.filter((i) => {
-            const includes = [
-              "tradeskillmaster_apphelper",
-              "tradeskill-master",
-            ].includes(i);
-            if (!includes) {
-              return i;
-            } else {
-              return store.set("addons.tsm", includes);
-            }
-          });
-          return store.set("addons.curse", removeTSM);
-        },
-      },
+      schema,
+      migrations,
     });
 
     debugState = config.get("debug");
@@ -71,7 +55,7 @@ const main = async () => {
       );
       console.log(chalk.red("Enable debug mode to learn more."));
       cfg.debug &&
-        console.log("Unhandled Rejection at:", reason.stack || reason);
+        console.log("unhandled rejection", reason.stack || reason);
       if (notifier.update) {
         notifier.notify();
       }
@@ -140,7 +124,10 @@ const main = async () => {
       if (type === "tsm") return tsmLogic(page, value, multibar, cfg);
     });
 
-    cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
+    if (cfg.addons.curse) {
+      cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
+    }
+
     if (cfg.addons.elvui) {
       [...cfg.addons.elvui, "elvui"].map((value) =>
         cluster.queue({ type: "elvui", value })
@@ -166,7 +153,7 @@ const main = async () => {
       )
     );
     console.log(chalk.red("Enable debug mode to learn more."));
-    console.log(chalk.red("Trace."), err.stack || err);
+    console.log(chalk.red("trace"), err.stack || err);
     if (notifier.update) {
       notifier.notify();
     }
