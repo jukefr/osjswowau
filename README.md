@@ -7,7 +7,7 @@ manage a single config file and always be up to date everywhere
 
 it also supports concurrent threads (configurable, defaults to 5)
 
-![demo gif](https://i.imgur.com/jDoBdsh.gif)
+![demo gif](https://i.imgur.com/AxjnSHu.gif)
 
 ## requirements
 - node.js lts or newer
@@ -15,6 +15,7 @@ it also supports concurrent threads (configurable, defaults to 5)
 ## supported
 - curse **(latest, md5 checked)**
 - elvui + elvui addons **(latest, no hashes available)**
+- tsm + tsm_apphelper **(latest, no hashes available)**
 
 ## try it out
 **you will need to run it twice (it downloads 130Mb of chromium on every execution, so slow connections may favor installation and usage section)**
@@ -55,7 +56,6 @@ the first time you use the app it will tell you where the configuration file is 
             "little-wigs",
             "pawn",
             "plater-nameplates",
-            "tradeskill-master",
             "weakauras-2",
         ],
         elvui: [ // having this section will enable elvui updates (or not)
@@ -63,6 +63,7 @@ the first time you use the app it will tell you where the configuration file is 
             38, // shadow and light
             3, // addon skins
         ],
+        tsm: true // enable or disablr tsm+apphelper update
     },
 }
 ```
@@ -82,3 +83,10 @@ you need the addon id as they do not provide names ( or hashes 😞 )
 https://www.tukui.org/addons.php?id=137
 -> 137
 ```
+
+### tsm and apphelper
+simply having the `addons.tsm` key set to true will update them
+
+you still need the [corresponding software though](https://www.tradeskillmaster.com/install)... (for now)
+
+on linux just run it in the same wine container with the same prefix and everything should work just fine
