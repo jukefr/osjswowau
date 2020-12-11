@@ -4,8 +4,8 @@
     "type": "git",
     "url": "https://github.com/jukefr/osjswowau.git"
   },
-  "description": "a cross-platform cli utility to update your World of Warcraft addons",
-  "version": "2.2.3",
+  "description": "\uD83D\uDD79️ a cross-platform cli utility to update your World of Warcraft addons",
+  "version": "2.2.4",
   "main": "index.js",
   "license": "GPL-3.0",
   "bin": "./osjswowau",
