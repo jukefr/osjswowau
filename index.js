@@ -128,11 +128,14 @@ const main = async () => {
     }
 
     if (cfg.addons.tukui) {
-      if (cfg.addons.tukui.tukui) cluster.queue({ type: "tukui", value: "tukui" })
-      if (cfg.addons.tukui.elvui) cluster.queue({ type: "tukui", value: "elvui" })
-      if (cfg.addons.tukui.addons) [...cfg.addons.tukui.addons].map((value) =>
-        cluster.queue({ type: "tukui", value })
-      );
+      if (cfg.addons.tukui.tukui)
+        cluster.queue({ type: "tukui", value: "tukui" });
+      if (cfg.addons.tukui.elvui)
+        cluster.queue({ type: "tukui", value: "elvui" });
+      if (cfg.addons.tukui.addons)
+        [...cfg.addons.tukui.addons].map((value) =>
+          cluster.queue({ type: "tukui", value })
+        );
     }
     if (cfg.addons.tsm) {
       ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));

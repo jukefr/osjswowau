@@ -33,10 +33,10 @@ const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
   });
 
   switch (name) {
-    case 'elvui':
+    case "elvui":
       await page.goto("https://www.tukui.org/download.php?ui=elvui");
       break;
-    case 'tukui':
+    case "tukui":
       await page.goto("https://www.tukui.org/download.php?ui=tukui");
       break;
     default:
@@ -47,8 +47,8 @@ const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
   let filename;
 
   switch (name) {
-    case 'tukui':
-    case 'elvui':
+    case "tukui":
+    case "elvui":
       [_, filename] = await Promise.all([
         page.$eval("#download > div > div > a", (x) => x.click()),
         wait(null, name),
@@ -57,7 +57,7 @@ const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
     default:
       [_, filename] = await Promise.all([
         page.$eval("div.col-md-3:nth-child(3) > a:nth-child(1)", (x) =>
-            x.click()
+          x.click()
         ),
         wait(null, name),
       ]);

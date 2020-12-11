@@ -37,11 +37,11 @@ const migrations = {
   "3.1.0": (store) => {
     const elvui = store.get("addons.elvui");
     if (Array.isArray(elvui)) {
-      store.set("addons.tukui.addons", elvui)
+      store.set("addons.tukui.addons", elvui);
       store.set("addons.tukui.elvui", true);
-      store.delete('addons.elvui')
+      store.delete("addons.elvui");
     }
-  }
+  },
 };
 
 const schema = {
@@ -99,7 +99,7 @@ const schema = {
           type: "array",
           items: { type: "number", default: 3 },
           default: [137, 38, 3],
-        }
+        },
       },
       tsm: { type: "boolean", default: false },
     },
