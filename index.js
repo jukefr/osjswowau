@@ -5,6 +5,7 @@ const cliProgress = require("cli-progress");
 const { firstStart, cleanTmps, template, log } = require("./utils");
 const { elvuiLogic } = require("./elvui");
 const { curseLogic } = require("./curse");
+const { tsmLogic } = require("./tsm");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
@@ -23,6 +24,23 @@ const main = async () => {
   try {
     const config = new Conf({
       defaults: template,
+      migrations: {
+        ">=2.2.0": (store) => {
+          const curse = store.get("addons.curse");
+          const removeTSM = curse.filter((i) => {
+            const includes = [
+              "tradeskillmaster_apphelper",
+              "tradeskill-master",
+            ].includes(i);
+            if (!includes) {
+              return i;
+            } else {
+              return store.set("addons.tsm", includes);
+            }
+          });
+          return store.set("addons.curse", removeTSM);
+        },
+      },
     });
 
     debugState = config.get("debug");
@@ -119,6 +137,7 @@ const main = async () => {
     await cluster.task(({ page, data: { type, value } }) => {
       if (type === "elvui") return elvuiLogic(page, value, multibar, cfg);
       if (type === "curse") return curseLogic(page, value, multibar, cfg);
+      if (type === "tsm") return tsmLogic(page, value, multibar, cfg);
     });
 
     cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
@@ -126,6 +145,9 @@ const main = async () => {
       [...cfg.addons.elvui, "elvui"].map((value) =>
         cluster.queue({ type: "elvui", value })
       );
+    }
+    if (cfg.addons.tsm) {
+      ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));
     }
 
     cfg.debug && log.debug(cluster.jobQueue);

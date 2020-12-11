@@ -49,7 +49,6 @@ const template = {
       "little-wigs",
       "pawn",
       "plater-nameplates",
-      "tradeskill-master",
       "weakauras-2",
     ],
     elvui: [
@@ -58,6 +57,7 @@ const template = {
       38, // shadow and light
       3, // addon skins
     ],
+    tsm: false,
   },
 };
 
