@@ -34,6 +34,14 @@ const migrations = {
       store.set("delay", delay);
     }
   },
+  "3.1.0": (store) => {
+    const elvui = store.get("addons.elvui");
+    if (Array.isArray(elvui)) {
+      store.set("addons.tukui.addons", elvui)
+      store.set("addons.tukui.elvui", true);
+      store.delete('addons.elvui')
+    }
+  }
 };
 
 const schema = {
@@ -84,10 +92,14 @@ const schema = {
           "weakauras-2",
         ],
       },
-      elvui: {
-        type: "array",
-        items: { type: "number", default: 3 },
-        default: [137, 38, 3],
+      tukui: {
+        tukui: { type: "boolean", default: false },
+        elvui: { type: "boolean", default: true },
+        addons: {
+          type: "array",
+          items: { type: "number", default: 3 },
+          default: [137, 38, 3],
+        }
       },
       tsm: { type: "boolean", default: false },
     },

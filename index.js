@@ -2,10 +2,10 @@ const puppeteer = require("puppeteer-extra");
 const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
-const { firstStart, cleanTmps, schema, log, migrations } = require("./utils");
-const { elvuiLogic } = require("./elvui");
-const { curseLogic } = require("./curse");
-const { tsmLogic } = require("./tsm");
+const { firstStart, cleanTmps, schema, log, migrations } = require("./_utils");
+const { tukuiLogic } = require("./_tukui");
+const { curseLogic } = require("./_curse");
+const { tsmLogic } = require("./_tsm");
 const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
 const chalk = require("chalk");
@@ -118,7 +118,7 @@ const main = async () => {
     cfg.debug && log.debug({ cluster });
 
     await cluster.task(({ page, data: { type, value } }) => {
-      if (type === "elvui") return elvuiLogic(page, value, multibar, cfg);
+      if (type === "tukui") return tukuiLogic(page, value, multibar, cfg);
       if (type === "curse") return curseLogic(page, value, multibar, cfg);
       if (type === "tsm") return tsmLogic(page, value, multibar, cfg);
     });
@@ -127,9 +127,11 @@ const main = async () => {
       cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
     }
 
-    if (cfg.addons.elvui) {
-      [...cfg.addons.elvui, "elvui"].map((value) =>
-        cluster.queue({ type: "elvui", value })
+    if (cfg.addons.tukui) {
+      if (cfg.addons.tukui.tukui) cluster.queue({ type: "tukui", value: "tukui" })
+      if (cfg.addons.tukui.elvui) cluster.queue({ type: "tukui", value: "elvui" })
+      if (cfg.addons.tukui.addons) [...cfg.addons.tukui.addons].map((value) =>
+        cluster.queue({ type: "tukui", value })
       );
     }
     if (cfg.addons.tsm) {

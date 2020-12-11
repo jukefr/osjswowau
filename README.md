@@ -1,22 +1,20 @@
 # 🕹️ osjswowau
-open source javascript wow addon updater
+**O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
-it's also cross-platform (windows/linux/macos/docker)
-
-manage a **single configuration file** and always be up to date everywhere
-
-it also supports concurrent threads (configurable, defaults to 5)
-
+- manage a **single configuration file** and always be up to date everywhere
+- it's also **cross-platform** (windows/linux/macos/docker)
+- supports **concurrent** threads (configurable, defaults to 5)
+- 
 
 ![demo gif](https://i.imgur.com/AxjnSHu.gif)
 
 ## requirements
 - node.js lts or newer
 
-## supported
-- curse **(latest, md5 checked)**
-- elvui + elvui addons **(latest, no hashes available)**
-- tsm + tsm_apphelper **(latest, no hashes available)**
+## supported addon sources
+- **curse addons** (latest, md5 checked)
+- **tukui** + **elvui** + **tukui addons** (latest, no hashes available)
+- **tsm** + **tsm_apphelper** (latest, no hashes available)
 
 ## try it out
 you will need to run it twice
@@ -40,17 +38,23 @@ otherwise, try simply re-running the command a second time before changing the c
 
 the first time you use the app it will tell you where the configuration file is located
 
-`utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
+`_utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
 
 ### curse addons
+curse addon names go in `addons.curse`
+
 simply use the name of the extension from the curse site
 ```
 https://www.curseforge.com/wow/addons/plater-nameplates/...
 -> plater-nameplates
 ```
 
-### elvui and elvui addons
-having an `elvui` array in your `addons` config section will automatically enable updating elvui
+### tukui, elvui and tukui addons
+having an `elvui: true` array in your `addons.tukui` config section will enable updating elvui
+
+having an `tukui: true` array in your `addons.tukui` config section will enable updating tukui
+
+tukui addon ids go in `addons.tukui.addons`
 
 you need the addon id as they do not provide names ( or hashes 😞 )
 ```
@@ -67,5 +71,5 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 
 ## todo
-- [ ] tukui support (currently supports the addons but not tukui itself)
+- [ ] wowinterface
 - [ ] classic/retail toggle (currently only retail)

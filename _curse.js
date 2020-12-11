@@ -2,7 +2,7 @@ const { existsSync, createReadStream } = require("fs");
 const moment = require("moment");
 const md5File = require("md5-file");
 const unzipper = require("unzipper");
-const { log, delay } = require("./utils");
+const { log, delay } = require("./_utils");
 
 const curseLogic = async (page, name, multibar, cfg) => {
   let bar;

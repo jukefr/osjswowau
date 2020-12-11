@@ -3,9 +3,9 @@ const moment = require("moment");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
-const { log, delay } = require("./utils");
+const { log, delay } = require("./_utils");
 
-const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
+const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
   let bar;
 
   cfg.debug || (bar = multibar.create(3, 0));
@@ -32,31 +32,37 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
     downloadPath: `${cfg.tmp}\-${name}`,
   });
 
-  if (name === "elvui") {
-    await page.goto("https://www.tukui.org/download.php?ui=elvui");
+  switch (name) {
+    case 'elvui':
+      await page.goto("https://www.tukui.org/download.php?ui=elvui");
+      break;
+    case 'tukui':
+      await page.goto("https://www.tukui.org/download.php?ui=tukui");
+      break;
+    default:
+      await page.goto(`https://www.tukui.org/addons.php?id=${name}`);
   }
-
-  if (Number.isInteger(name)) {
-    cfg.debug && log.debug(`https://www.tukui.org/addons.php?id=${name}`);
-    await page.goto(`https://www.tukui.org/addons.php?id=${name}`);
-  }
-
   await delay(cfg.delay);
 
   let filename;
-  if (name === "elvui") {
-    [_, filename] = await Promise.all([
-      page.$eval("#download > div > div > a", (x) => x.click()),
-      wait(null, name),
-    ]);
-  } else {
-    [_, filename] = await Promise.all([
-      page.$eval("div.col-md-3:nth-child(3) > a:nth-child(1)", (x) =>
-        x.click()
-      ),
-      wait(null, name),
-    ]);
+
+  switch (name) {
+    case 'tukui':
+    case 'elvui':
+      [_, filename] = await Promise.all([
+        page.$eval("#download > div > div > a", (x) => x.click()),
+        wait(null, name),
+      ]);
+      break;
+    default:
+      [_, filename] = await Promise.all([
+        page.$eval("div.col-md-3:nth-child(3) > a:nth-child(1)", (x) =>
+            x.click()
+        ),
+        wait(null, name),
+      ]);
   }
+
   cfg.debug || bar.update(2, { filename: basename(filename) });
 
   await new Promise((resolve, reject) =>
@@ -73,5 +79,5 @@ const elvuiLogic = async (page, name = "elvui", multibar, cfg) => {
 };
 
 module.exports = {
-  elvuiLogic,
+  tukuiLogic,
 };

@@ -3,7 +3,7 @@ const moment = require("moment");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
-const { log, delay } = require("./utils");
+const { log, delay } = require("./_utils");
 
 const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
   let bar;
