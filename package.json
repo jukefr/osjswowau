@@ -18,7 +18,7 @@
     "build:mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
     "build": "npm run build:linux64 && npm run build:linux86 && npm run build:windows64 && npm run build:windows86 && npm run build:mac64 ",
     "lint": "prettier -w ./*.js",
-    "release": "release-it",
+    "release": "dotenv release-it --",
     "bump:patch": "npm version patch --force && npm publish",
     "bump:minor": "npm version minor --force && npm publish",
     "bump:major": "npm version major --force && npm publish"
@@ -53,6 +53,7 @@
     "clone-deep": "4.0.1"
   },
   "devDependencies": {
+    "dotenv-cli": "^4.0.0",
     "eslint": "^7.15.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.0.0",
