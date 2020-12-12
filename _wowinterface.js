@@ -2,6 +2,7 @@ const { existsSync, createReadStream, statSync } = require("fs");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
+const chalk = require("chalk");
 const { delay, deleteFile } = require("./_utils");
 
 const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
@@ -20,7 +21,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
     return null;
   };
 
-  if (bar) bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: `downloading ${chalk.green(name)}` });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
@@ -35,7 +36,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
 
   const filename = await wait(null, name);
 
-  if (bar) bar.update(2, { filename: basename(filename) });
+  if (bar) bar.update(2, { filename: `extracting ${chalk.green(basename(filename))}` });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -46,7 +47,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  if (bar) bar.update(3, { filename: basename(filename) });
+  if (bar) bar.update(3, { filename: `deleting ${chalk.green(basename(filename))}` });
   await deleteFile(filename);
   return page.close();
 };

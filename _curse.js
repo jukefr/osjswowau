@@ -2,6 +2,8 @@ const { existsSync, createReadStream } = require("fs");
 const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
+const { basename } = require("path");
+const chalk = require("chalk");
 const { delay, deleteFile } = require("./_utils");
 
 const curseLogic = async (page, name, bar, cfg) => {
@@ -20,7 +22,7 @@ const curseLogic = async (page, name, bar, cfg) => {
     return null;
   };
 
-  if (bar) bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: `downloading ${chalk.green(name)}` });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
@@ -55,8 +57,6 @@ const curseLogic = async (page, name, bar, cfg) => {
     }
   }
 
-  const filepathNode = await page.$("div.flex-row:nth-child(1) > span:nth-child(2)");
-  const filepath = await (await filepathNode.getProperty("innerText")).jsonValue();
   const md5Node = await page.$("div.flex:nth-child(7) > span:nth-child(2)");
   const md5 = await (await md5Node.getProperty("innerText")).jsonValue();
 
@@ -67,7 +67,7 @@ const curseLogic = async (page, name, bar, cfg) => {
 
   const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), wait(md5)]);
 
-  if (bar) bar.update(2, { filename: filepath });
+  if (bar) bar.update(2, { filename: `extracting ${chalk.green(basename(filename))}` });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -78,7 +78,7 @@ const curseLogic = async (page, name, bar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  if (bar) bar.update(3, { filename: filepath });
+  if (bar) bar.update(3, { filename: `deleting ${chalk.green(basename(filename))}` });
   await deleteFile(filename);
   return page.close();
 };

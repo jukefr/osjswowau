@@ -1,6 +1,7 @@
 const { existsSync, createReadStream, statSync } = require("fs");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
+const chalk = require("chalk");
 const { basename } = require("path");
 const { delay, deleteFile } = require("./_utils");
 
@@ -20,7 +21,7 @@ const tukuiLogic = async (page, name = "tukui", bar, cfg) => {
     return null;
   };
 
-  if (bar) bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: `downloading ${chalk.green(name)}` });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
@@ -56,7 +57,7 @@ const tukuiLogic = async (page, name = "tukui", bar, cfg) => {
 
   const filename = await wait(null, name);
 
-  if (bar) bar.update(2, { filename: basename(filename) });
+  if (bar) bar.update(2, { filename: `extracting ${chalk.green(basename(filename))}` });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -67,7 +68,7 @@ const tukuiLogic = async (page, name = "tukui", bar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  if (bar) bar.update(3, { filename: basename(filename) });
+  if (bar) bar.update(3, { filename: `deleting ${chalk.green(basename(filename))}` });
   await deleteFile(filename);
   return page.close();
 };

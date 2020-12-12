@@ -71,12 +71,12 @@ const main = async () => {
       if (!cfg.debug) {
         if (!cfg.chromiumBar) {
           cfg.chromiumBar = multibar.create(total, 0, {
-            filename: `chromium-${revision}`,
+            filename: `downloading ${chalk.green(`chromium-${revision}`)} `,
           });
           return null;
         }
         return cfg.chromiumBar.update(transferred, {
-          filename: `chromium-${revision}`,
+          filename: `downloading ${chalk.green(`chromium-${revision}`)} (${((transferred/total) * 100).toFixed(2)}% downloaded)`,
         });
       }
       return null;
