@@ -57,20 +57,22 @@ const main = async () => {
       throw new Error("unsupported OS currently sorry");
     };
 
+    const revision = getRevision(process.platform)
+
     const browserFetcher = puppeteer.createBrowserFetcher({
-      path: join(dirname(config.path), `chromium-${getRevision(process.platform)}`),
+      path: join(dirname(config.path), `chromium-${revision}`),
     });
 
-    const revisionInfo = await browserFetcher.download(getRevision(process.platform), (transferred, total) => {
+    const revisionInfo = await browserFetcher.download(revision, (transferred, total) => {
       if (!cfg.debug) {
         if (!cfg.chromiumBar) {
           cfg.chromiumBar = multibar.create(total, 0, {
-            filename: "chromium",
+            filename: `chromium-${revision}`,
           });
           return null;
         }
         return cfg.chromiumBar.update(transferred, {
-          filename: "chromium",
+          filename: `chromium-${revision}`,
         });
       }
       return null;
