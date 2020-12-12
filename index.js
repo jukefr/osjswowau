@@ -76,7 +76,9 @@ const main = async () => {
           return null;
         }
         return cfg.chromiumBar.update(transferred, {
-          filename: `downloading ${chalk.green(`chromium-${revision}`)} (${((transferred/total) * 100).toFixed(2)}% downloaded)`,
+          filename: `downloading ${chalk.green(`chromium-${revision}`)} (${((transferred / total) * 100).toFixed(
+            2
+          )}% downloaded)`,
         });
       }
       return null;
