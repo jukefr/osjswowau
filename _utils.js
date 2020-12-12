@@ -71,7 +71,7 @@ const schema = {
   debug: { type: "boolean", default: false }, // disable progress bars and enable more verbose logs
   headless: { type: "boolean", default: true }, // hide chromium windows
   concurrency: { type: "number", maximum: 10, minimum: 1, default: 5 }, // amount of addons that can be updated at the same time ("threads")
-  addonPath: { type: "string", default: "C:\\\\blabla\\\\bla..." },
+  addonPath: { type: "string", default: "C:\\blabla\\bla..." },
   timeout: {
     // how long an action can take (goto, click, wait, etc) in ms
     type: "number",
