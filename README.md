@@ -9,32 +9,35 @@
 
 ![demo gif](https://i.imgur.com/Xsu2Jz0.gif)
 
-## choices
-- prebuilt binaries over on [github releases](https://github.com/jukefr/osjswowau/releases) (click n' go)
-- **OR** node.js lts or newer
-
-## supported addon sources
+## addon sources
 - **curse addons** (latest, md5 checked)
 - **wowinterface addons** (latest, no hashes available)
 - **tukui** + **elvui** + **tukui addons** (latest, no hashes available)
 - **tsm** + **tsm_apphelper** (latest, no hashes available)
 
-## try it out
-you will need to run it twice
-
-the first time we bootstrap the configuration file and kill the process to give you some time to edit it
+## usage
 ```bash
-$ npx osjswowau
+$ osjswowau
 ```
 
-## installation and usage
+## installation
+the first time we bootstrap the configuration file and kill the process to give you some time to edit it
+
+### binary
 download a prebuilt binary from the [github releases](https://github.com/jukefr/osjswowau/releases) and run it
 
-or use your own node/npm
-```bash
-$ npm i -g osjswowau
+on **windows** place it somewhere that is reference in your `PATH` variable manually
 
-$ osjswowaus
+for **linux and macos** this command should work, make sure to replace the downloaded file name
+```bash
+$ sudo install ~/Downloads/osjswowau-platformXX /usr/local/bin/osjswowau
+```
+
+### npm
+```bash
+$ npx osjswowau         # to try it without keeping it path with npm
+
+$ npm i -g osjswowau    # to install globally and have it in path with npm
 ```
 
 ## how to configure
