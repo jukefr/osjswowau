@@ -5,7 +5,7 @@ const { inspect } = require("util");
 const https = require("https");
 const pkg = require("./package.json");
 
-const debug = process.env.DEBUG || false
+const debug = process.env.DEBUG || false;
 
 const deleteFile = (path) => unlink(path);
 
@@ -143,7 +143,7 @@ const log = {
   debug: (...msg) => console.log(chalk.blue(inspect(...msg))),
 };
 
-class FreshStartError extends Error{
+class FreshStartError extends Error {
   constructor(message, cause) {
     super(message);
     this.cause = cause;
@@ -151,14 +151,13 @@ class FreshStartError extends Error{
   }
 }
 
-class WaitTimeoutError extends Error{
+class WaitTimeoutError extends Error {
   constructor(message, cause) {
     super(message);
     this.cause = cause;
     this.name = "WaitTimeoutError";
   }
 }
-
 
 const firstStart = (config) => {
   if (config.get("fresh")) {
@@ -173,7 +172,7 @@ const firstStart = (config) => {
     if (process.platform === "win32" || process.platform === "win64")
       log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
     config.set("fresh", false);
-    throw new FreshStartError()
+    throw new FreshStartError();
   }
 };
 
@@ -187,7 +186,7 @@ const errorLogic = (err, config) => {
     case FreshStartError:
       console.log(chalk.red("This is your first run. Terminating so you can edit config."));
       if (debug) console.log(chalk.red("cause"), err.cause || err);
-      break
+      break;
     case SyntaxError:
       console.log(chalk.red("Your configuration file probably has an incorrect syntax."));
       if (debug) console.log(chalk.red("cause"), err.cause || err);
@@ -199,8 +198,8 @@ const errorLogic = (err, config) => {
       if (debug) console.log(chalk.red(err.constructor.name));
       if (debug) console.log(chalk.red("trace"), err.stack || err);
   }
-  if (config.set) config.set('errored', "1")
-}
+  if (config.set) config.set("errored", "1");
+};
 
 const endLogic = (latest) => {
   if (latest) {
@@ -221,17 +220,18 @@ const endLogic = (latest) => {
       );
     }
   }
-}
+};
 
 const errorLogicWrapper = (err, config, latest) => {
-  errorLogic(err, config)
-  if (!config.get) { // config is bad
-    endLogic()
-    process.exit(1)
+  errorLogic(err, config);
+  if (!config.get) {
+    // config is bad
+    endLogic();
+    process.exit(1);
   }
-  if (config.get('errored')) endLogic(latest)
-  if (config.get('errored')) process.exit(Number(config.get('errored')))
-}
+  if (config.get("errored")) endLogic(latest);
+  if (config.get("errored")) process.exit(Number(config.get("errored")));
+};
 
 module.exports = {
   firstStart,
@@ -246,5 +246,5 @@ module.exports = {
   WaitTimeoutError,
   errorLogic,
   endLogic,
-  errorLogicWrapper
+  errorLogicWrapper,
 };

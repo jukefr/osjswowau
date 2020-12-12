@@ -6,20 +6,20 @@ const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper, getLatestTag} = require("./_utils");
+const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper, getLatestTag } = require("./_utils");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
 const pkg = require("./package.json");
 
-const debug = process.env.DEBUG || false
+const debug = process.env.DEBUG || false;
 if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
 
 console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
 
-let config = {}
-let latest
+let config = {};
+let latest;
 
 puppeteer.use(StealthPlugin());
 
@@ -33,12 +33,12 @@ const main = async () => {
       schema,
       migrations,
     });
-    config.delete('errored')
+    config.delete("errored");
 
     latest = await getLatestTag();
 
-    process.on('unhandledRejection',  err => {
-      errorLogicWrapper(err, config, latest)
+    process.on("unhandledRejection", (err) => {
+      errorLogicWrapper(err, config, latest);
     });
 
     const multibar = new cliProgress.MultiBar(
@@ -50,7 +50,6 @@ const main = async () => {
       },
       cliProgress.Presets.legacy
     );
-
 
     firstStart(config);
 
@@ -104,16 +103,16 @@ const main = async () => {
     });
 
     cluster.on("taskerror", (err, data) => {
-      if (debug) console.log(chalk.red('task data'), data)
-      errorLogicWrapper(err, config, latest)
+      if (debug) console.log(chalk.red("task data"), data);
+      errorLogicWrapper(err, config, latest);
     });
 
     const makeBar = (mb) => mb.create(3, 0, { filename: "" });
 
     await cluster.task(async ({ page, data: { type, value } }) => {
-      await page.setDefaultNavigationTimeout(config.get('timeout'));
-      await page.setDefaultTimeout(config.get('timeout'));
-      if (debug) console.log('queuing task', chalk.yellow(value, type))
+      await page.setDefaultNavigationTimeout(config.get("timeout"));
+      await page.setDefaultTimeout(config.get("timeout"));
+      if (debug) console.log("queuing task", chalk.yellow(value, type));
       const bar = debug ? undefined : makeBar(multibar);
       if (type === "tukui") return tukuiLogic(page, value, bar, cfg);
       if (type === "curse") return curseLogic(page, value, bar, cfg);
@@ -144,9 +143,9 @@ const main = async () => {
     await cleanTmps(cfg);
     return cluster.close();
   } catch (err) {
-    errorLogicWrapper(err, config, latest)
+    errorLogicWrapper(err, config, latest);
   } finally {
-    await endLogic()
+    await endLogic();
   }
 
   return null;
