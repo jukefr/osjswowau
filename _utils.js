@@ -153,8 +153,6 @@ const firstStart = (config) => {
       );
     if (process.platform === "win32" || process.platform === "win64")
       log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
-    log.info();
-    log.info("hint: if your configuration keeps getting reset you are probably making syntax errors");
     config.set("fresh", false);
     process.exit(1);
   }
