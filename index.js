@@ -20,6 +20,7 @@ puppeteer.use(StealthPlugin());
 const main = async () => {
   try {
     const config = new Conf({
+      projectName: 'osjswowau',
       schema,
       migrations,
     });

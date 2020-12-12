@@ -18,10 +18,7 @@
     "build:mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
     "build": "rm -rf dist && npm run build:linux64 && npm run build:linux86 && npm run build:windows64 && npm run build:windows86 && npm run build:mac64 ",
     "lint": "prettier -w ./*.js",
-    "release": "dotenv release-it --",
-    "bump:patch": "npm version patch --force && npm publish",
-    "bump:minor": "npm version minor --force && npm publish",
-    "bump:major": "npm version major --force && npm publish"
+    "release": "dotenv release-it --"
   },
   "keywords": [
     "wow",
@@ -65,6 +62,10 @@
   "release-it": {
     "git": {
       "commitMessage": "chore: release v${version}"
+    },
+    "hooks": {
+      "before:init": ["npm run lint"],
+      "after:bump": ["npm run build"]
     },
     "github": {
       "release": true,

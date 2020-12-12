@@ -28,6 +28,9 @@ $ npx osjswowau
 ```
 
 ## installation and usage
+download a prebuilt binary from the [github releases](https://github.com/jukefr/osjswowau/releases) and run it
+
+or use your own node/npm
 ```bash
 $ npm i -g osjswowau
 
@@ -85,4 +88,4 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 ## todo
 - [ ] classic/retail toggle (currently only retail)
-- [ ] self made update with https://api.github.com/repos/jukefr/osjswowau/tags
+- [ ] bring back debugger
