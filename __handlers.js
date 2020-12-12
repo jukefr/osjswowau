@@ -6,7 +6,7 @@ const { getLatestVersion } = require("./__utils");
 
 const handleFreshStart = (config) => {
   if (config.get("fresh")) {
-    messages.freshStart(undefined, false, config)
+    messages.freshStart(undefined, false, config);
     config.set("fresh", false);
     throw new FreshStartError();
   }
