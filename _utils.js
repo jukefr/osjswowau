@@ -1,6 +1,5 @@
 const chalk = require("chalk");
-const { existsSync, statSync, createReadStream } = require("fs");
-const { rmdir, unlink } = require("fs").promises;
+const { existsSync, statSync, createReadStream, rmdirSync, unlinkSync } = require("fs");
 const glob = require("glob-promise");
 const https = require("https");
 const md5File = require("md5-file");
@@ -73,7 +72,7 @@ const schema = {
   },
 };
 
-const deleteFile = (path) => unlink(path);
+const deleteFile = (path) => unlinkSync(path);
 
 // TODO: find an automatic way to do this....
 const getRevision = (p) => {
@@ -145,7 +144,7 @@ const migrations = {
 
 const cleanTmps = async (tmp) => {
   const tmps = await glob(`${tmp}-*`);
-  const queue = tmps.map((t) => rmdir(t, { recursive: true }));
+  const queue = tmps.map((t) => rmdirSync(t, { recursive: true }));
   return Promise.all(queue);
 };
 
