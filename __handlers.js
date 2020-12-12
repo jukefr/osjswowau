@@ -23,6 +23,8 @@ const handleFreshStart = (config) => {
 
 const defaultErrorLogic = (err, debug) => {
   if (err.message && err.message.includes("Timeout hit:")) return messages.timeout(err, debug);
+  if (err.message && err.message.includes("Node is either not visible or not an HTMLElement"))
+    return messages.tooFast(err, debug);
   return messages.default(err, debug);
 };
 

@@ -11,12 +11,14 @@ const curseLogic = async (config, page, name, bar, tmp) => {
   await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`, {
     waitUntil: "networkidle2",
   });
+  await waitFor(config.get("delay"));
+
   const frames = page.frames();
   for (const frame of frames) {
     const maybeOptions = await frame.$("button[title='Options']");
     if (maybeOptions) await maybeOptions.click();
     if (maybeOptions) {
-      await waitFor(1000);
+      await waitFor(config.get("delay"));
       const newFrames = page.frames();
       for (const newFrame of newFrames) {
         const maybeReject = await newFrame.$("button[title='Reject All']");

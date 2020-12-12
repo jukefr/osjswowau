@@ -13,10 +13,13 @@ class WaitTimeoutError extends CausalError {}
 
 class BadOsError extends CausalError {}
 
+class TooFastError extends CausalError {}
+
 module.exports = {
   FreshStartError,
   WaitTimeoutError,
   BadOsError,
+  TooFastError,
   messages: {
     freshStart: (err, debug) => {
       console.log("");
@@ -44,6 +47,15 @@ module.exports = {
     configSyntax: (err, debug) => {
       console.log("");
       console.log(chalk.red("Your configuration file may have han an incorrect syntax. Please check it carefully."));
+      if (debug) console.log(chalk.red("cause"), err.stack || err);
+    },
+    tooFast: (err, debug) => {
+      console.log("");
+      console.log(
+        chalk.red(
+          `The ${chalk.bold("delay")} property seems to be too low for your connection, try increasing it some more.`
+        )
+      );
       if (debug) console.log(chalk.red("cause"), err.stack || err);
     },
     default: (err, debug) => {
