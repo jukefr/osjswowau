@@ -62,12 +62,13 @@
     "hooks": {
       "before:init": [],
       "after:bump": [
+        "npm run lint",
         "npm run changelog",
-        "npm run build:linux64",
+        ["npm run build:linux64",
         "npm run build:linux86",
         "npm run build:windows64",
         "npm run build:linux86",
-        "npm run build:mac64"
+        "npm run build:mac64"]
       ]
     },
     "github": {
