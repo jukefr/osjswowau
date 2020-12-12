@@ -16,7 +16,7 @@ const pkg = require("./package.json");
 puppeteer.use(StealthPlugin());
 
 let debug = process.env.DEBUG || false;
-console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
+console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
 
 let config = {};
 
@@ -88,13 +88,13 @@ const main = async () => {
       },
     });
 
-    const makeBar = (mb) => mb.create(4, 0, { filename: "" });
+    const makeBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
 
     await cluster.task(async ({ page, data: { type, value } }) => {
       await page.setDefaultNavigationTimeout(config.get("timeout"));
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
-      const bar = debug ? undefined : makeBar(multibar);
+      const bar = debug ? undefined : makeBar(multibar, value);
       if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp);
       if (type === "curse") return curseLogic(config, page, value, bar, tmp);
       if (type === "tsm") return tsmLogic(config, page, value, bar, tmp);

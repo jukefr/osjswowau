@@ -2,11 +2,76 @@ const chalk = require("chalk");
 const { existsSync, statSync, createReadStream } = require("fs");
 const { rmdir, unlink } = require("fs").promises;
 const glob = require("glob-promise");
-const { inspect } = require("util");
 const https = require("https");
 const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const pkg = require("./package.json");
+
+const schema = {
+  fresh: { type: "boolean", default: true }, // used on first start, should remain disabled after
+  headless: { type: "boolean", default: true }, // hide chromium windows
+  concurrency: { type: "number", maximum: 10, minimum: 1, default: 5 }, // amount of addons that can be updated at the same time ("threads")
+  addonPath: {
+    type: "string",
+    default: process.platform.includes("win") ? "C:\\path\\to\\addons\\folder\\..." : "path/to/addons/folder",
+  },
+  waitForKey: { type: "boolean", default: !!process.__nexe }, // wait for a key to continue, enabled by default on nexe
+  timeout: {
+    // how long an action can take (goto, click, wait, etc) in ms
+    type: "number",
+    maximum: 300 * 1000,
+    minimum: 10 * 1000,
+    default: 30 * 1000,
+  },
+  polling: {
+    // how long timeout loops wait after each check in ms
+    type: "number",
+    maximum: 10 * 1000,
+    minimum: 250,
+    default: 1000,
+  },
+  delay: {
+    // applied after every navigation action (goto, click, etc) in ms
+    type: "number",
+    maximum: 10 * 1000,
+    minimum: 250,
+    default: 2 * 1000,
+  },
+  addons: {
+    type: "object",
+    properties: {
+      curse: {
+        type: "array",
+        items: { type: "string", default: "azeroth-auto-pilot" },
+        default: [
+          "azeroth-auto-pilot",
+          "big-wigs",
+          "details",
+          "little-wigs",
+          "pawn",
+          "plater-nameplates",
+          "weakauras-2",
+        ],
+      },
+      tukui: {
+        tukui: { type: "boolean", default: false },
+        elvui: { type: "boolean", default: true },
+        addons: {
+          type: "array",
+          items: { type: "number", default: 3 },
+          default: [137, 38, 3],
+        },
+      },
+      tsm: { type: "boolean", default: false },
+      wowinterface: {
+        type: "array",
+        items: { type: "string", default: "24608-Hekili" },
+        default: [],
+      },
+    },
+    default: {},
+  },
+};
 
 const deleteFile = (path) => unlink(path);
 
@@ -78,82 +143,10 @@ const migrations = {
   },
 };
 
-const schema = {
-  fresh: { type: "boolean", default: true }, // used on first start, should remain disabled after
-  headless: { type: "boolean", default: true }, // hide chromium windows
-  concurrency: { type: "number", maximum: 10, minimum: 1, default: 5 }, // amount of addons that can be updated at the same time ("threads")
-  addonPath: {
-    type: "string",
-    default: process.platform.includes("win") ? "C:\\path\\to\\addons\\folder\\..." : "path/to/addons/folder",
-  },
-  waitForKey: { type: "boolean", default: !!process.__nexe }, // wait for a key to continue, enabled by default on nexe
-  timeout: {
-    // how long an action can take (goto, click, wait, etc) in ms
-    type: "number",
-    maximum: 300 * 1000,
-    minimum: 10 * 1000,
-    default: 30 * 1000,
-  },
-  polling: {
-    // how long timeout loops wait after each check in ms
-    type: "number",
-    maximum: 10 * 1000,
-    minimum: 250,
-    default: 1000,
-  },
-  delay: {
-    // applied after every navigation action (goto, click, etc) in ms
-    type: "number",
-    maximum: 10 * 1000,
-    minimum: 250,
-    default: 2 * 1000,
-  },
-  addons: {
-    type: "object",
-    properties: {
-      curse: {
-        type: "array",
-        items: { type: "string", default: "azeroth-auto-pilot" },
-        default: [
-          "azeroth-auto-pilot",
-          "big-wigs",
-          "details",
-          "little-wigs",
-          "pawn",
-          "plater-nameplates",
-          "weakauras-2",
-        ],
-      },
-      tukui: {
-        tukui: { type: "boolean", default: false },
-        elvui: { type: "boolean", default: true },
-        addons: {
-          type: "array",
-          items: { type: "number", default: 3 },
-          default: [137, 38, 3],
-        },
-      },
-      tsm: { type: "boolean", default: false },
-      wowinterface: {
-        type: "array",
-        items: { type: "string", default: "24608-Hekili" },
-        default: [],
-      },
-    },
-    default: {},
-  },
-};
-
 const cleanTmps = async (tmp) => {
   const tmps = await glob(`${tmp}-*`);
   const queue = tmps.map((t) => rmdir(t, { recursive: true }));
   return Promise.all(queue);
-};
-
-const log = {
-  error: (...msg) => console.log(chalk.red(...msg)),
-  info: (...msg) => console.log(chalk.green(...msg)),
-  debug: (...msg) => console.log(chalk.blue(inspect(...msg))),
 };
 
 class FreshStartError extends Error {
@@ -177,7 +170,7 @@ const firstStart = (config) => {
     console.log("First run or configuration updated.");
     console.log(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
     if (process.platform === "win32" || process.platform === "win64")
-      log.info(
+      console.log(
         `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
           "addonPath"
         )} (AddOns folder) variable.`
@@ -234,7 +227,7 @@ const endLogic = async (config) => {
   const latest = await getLatestTag();
   if (latest) {
     const latestName = latest.name.replace("v", "");
-    console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "finished");
+    console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "finished");
     if (`${latestName}` !== `${pkg.version}`) {
       console.log("");
       console.log(
@@ -252,13 +245,10 @@ const endLogic = async (config) => {
   }
   if (process.__nexe && config && config.store && !("waitForKey" in config.store)) {
     await waitToContinue();
-    console.log("debug1");
   }
   if (config && config.get("waitForKey")) {
     await waitToContinue();
-    console.log("debug1");
   }
-  console.log("debug1");
 };
 
 const errorLogicWrapper = async (err, config, debug) => {
@@ -314,7 +304,6 @@ module.exports = {
   firstStart,
   schema,
   delay,
-  log,
   cleanTmps,
   migrations,
   getLatestTag,

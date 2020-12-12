@@ -3,7 +3,6 @@ const chalk = require("chalk");
 const { delay, deleteFile, waitFile, unzip } = require("./_utils");
 
 const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
-  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -12,6 +11,7 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
     waitUntil: "networkidle2",
   });
   await delay(config.get("delay"));
+  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   let filename;
   if (name === "tsm") {
     [, filename] = await Promise.all([

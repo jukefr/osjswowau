@@ -3,7 +3,6 @@ const chalk = require("chalk");
 const { deleteFile, waitFile, unzip } = require("./_utils");
 
 const wowinterfaceLogic = async (config, page, name = "tukui", bar, tmp) => {
-  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -14,6 +13,7 @@ const wowinterfaceLogic = async (config, page, name = "tukui", bar, tmp) => {
         waitUntil: "networkidle2",
       });
   }
+  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   const filename = await waitFile(config, null, name, tmp);
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
   await unzip(config, filename);
