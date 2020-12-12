@@ -243,11 +243,13 @@ const endLogic = async (config) => {
       );
     }
   }
-  if (config && config.get("waitForKey")) {
-    await waitToContinue();
-  } else if (process.__nexe) {
+  if (process.__nexe) {
     await waitToContinue();
   }
+  if (config && config.get("waitForKey")) {
+    await waitToContinue();
+  }
+
 };
 
 const errorLogicWrapper = async (err, config, debug) => {
