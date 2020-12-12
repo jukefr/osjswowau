@@ -49,9 +49,6 @@ const main = async () => {
     firstStart(config);
 
     const revision = getRevision(process.platform);
-    process.on("unhandledRejection", async (err) => {
-      await errorLogicWrapper(err, config, debug);
-    });
     const browserFetcher = puppeteer.createBrowserFetcher({
       path: join(dirname(config.path), `chromium-${revision}`),
     });

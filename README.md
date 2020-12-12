@@ -3,6 +3,7 @@
 
 - manage a **single configuration file** and always be up to date everywhere
 - it's also **cross-platform** (windows/linux/macos/docker)
+- now **comes with a gui** *(sort of, you can just run the downloaded binary by double clicking it)*
 - supports **concurrent** threads (configurable, defaults to 5)
 - emulates a real user session so no rate limiting (hopefully)
 - full binary packages available on the [github releases](https://github.com/jukefr/osjswowau/releases)
@@ -84,4 +85,3 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 ## todo
 - [ ] classic/retail toggle (currently only retail)
-- [ ] 
