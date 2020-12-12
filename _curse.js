@@ -1,5 +1,4 @@
 const { existsSync, createReadStream } = require("fs");
-const moment = require("moment");
 const md5File = require("md5-file");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
@@ -7,8 +6,8 @@ const { delay, deleteFile } = require("./_utils");
 
 const curseLogic = async (page, name, bar, cfg) => {
   const wait = async (m) => {
-    const start = moment();
-    while (moment().diff(start, "ms") < cfg.timeout) {
+    const start = Date.now();
+    while ((Date.now() - start) < cfg.timeout) {
       const [fname] = await glob(`${cfg.tmp}-${name}/*.zip`);
       if (existsSync(fname)) {
         const md5 = await md5File(fname);

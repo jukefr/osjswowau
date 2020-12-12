@@ -1,5 +1,4 @@
 const { existsSync, createReadStream, statSync } = require("fs");
-const moment = require("moment");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
@@ -7,10 +6,10 @@ const { delay, deleteFile } = require("./_utils");
 
 const tukuiLogic = async (page, name = "tukui", bar, cfg) => {
   const wait = async (f, m) => {
-    const start = moment();
+    const start = Date.now();
     let size;
 
-    while (moment().diff(start, "ms") < cfg.timeout) {
+    while ((Date.now() - start) < cfg.timeout) {
       const [fname] = await glob(`${cfg.tmp}-${m}/*.zip`);
       if (existsSync(fname)) {
         if (size && size !== 0 && size === statSync(fname).size) return fname;

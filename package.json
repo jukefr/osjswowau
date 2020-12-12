@@ -11,11 +11,13 @@
   "bin": "./osjswowau",
   "scripts": {
     "start": "./osjswowau",
-    "build:linux64": "nexe -t linux-x64-12.9.1 -o dist/osjswowau-linux64 index.js",
-    "build:linux86": "nexe -t linux-x86-12.9.1 -o dist/osjswowau-linux86 index.js",
-    "build:windows64": "nexe -t windows-x64-12.9.1 -o dist/osjswowau-windows64 index.js",
-    "build:windows86": "nexe -t windows-x86-12.9.1 -o dist/osjswowau-windows86 index.js",
-    "build:mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
+    "clean": "rm -rf dist",
+    "build-linux64": "nexe -t linux-x64-12.9.1 -o dist/osjswowau-linux64 index.js",
+    "build-linux86": "nexe -t linux-x86-12.9.1 -o dist/osjswowau-linux86 index.js",
+    "build-windows64": "nexe -t windows-x64-12.9.1 -o dist/osjswowau-windows64 index.js",
+    "build-windows86": "nexe -t windows-x86-12.9.1 -o dist/osjswowau-windows86 index.js",
+    "build-mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
+    "build": "concurrently \"npm:build-*\"",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
     "release": "dotenv release-it --"
@@ -46,6 +48,7 @@
   },
   "devDependencies": {
     "auto-changelog": "^2.2.1",
+    "concurrently": "^5.3.0",
     "dotenv-cli": "^4.0.0",
     "eslint": "^7.15.0",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -64,11 +67,8 @@
       "after:bump": [
         "npm run lint",
         "npm run changelog",
-        "npm run build:linux64",
-        "npm run build:linux86",
-        "npm run build:windows64",
-        "npm run build:linux86",
-        "npm run build:mac64"
+        "npm run clean",
+        "npm run build"
       ]
     },
     "github": {
