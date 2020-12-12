@@ -20,7 +20,7 @@
     "build": "concurrently \"npm:build-*\"",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
-    "release": "dotenv release-it --"
+    "release": "dotenv release-it -- --ci"
   },
   "keywords": [
     "wow",
