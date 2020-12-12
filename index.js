@@ -38,7 +38,7 @@ const main = async () => {
 
     const cfg = {
       ...config.store,
-      tmp: join(dirname(config.path), config.get("tmp")),
+      tmp: join(dirname(config.path), 'tmp'),
     };
 
     process.on("unhandledRejection", (reason) => {

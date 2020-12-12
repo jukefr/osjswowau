@@ -93,11 +93,6 @@ const schema = {
     minimum: 250,
     default: 2 * 1000,
   },
-  tmp: {
-    // custom tmp path folder name variable ($CONFIG_FOLDER/$tmp)
-    type: "string",
-    default: "./tmp",
-  },
   addons: {
     type: "object",
     properties: {
@@ -135,7 +130,7 @@ const schema = {
 };
 
 const cleanTmps = async (cfg) => {
-  const tmps = await glob(`${cfg.tmp}*`);
+  const tmps = await glob(`${cfg.tmp}-*`);
   const queue = tmps.map((t) => rmdir(t, { recursive: true }));
   return Promise.all(queue);
 };
