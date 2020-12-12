@@ -23,7 +23,7 @@ const main = async () => {
       projectName: pkg.name,
       projectVersion: pkg.version,
       clearInvalidConfig: false,
-      projectSuffix: '',
+      projectSuffix: "",
       schema,
       migrations,
     });
@@ -136,9 +136,7 @@ const main = async () => {
     await cleanTmps(cfg);
     return cluster.close();
   } catch (err) {
-    console.log(
-      chalk.red("Something went wrong. Usually a re-run of the command should work.")
-    );
+    console.log(chalk.red("Something went wrong. Usually a re-run of the command should work."));
     console.log(chalk.red("Otherwise enable debug mode to learn more."));
     if (err instanceof SyntaxError) {
       console.log(chalk.red("Your configuration file probably has an incorrect syntax."));
