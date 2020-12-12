@@ -16,7 +16,6 @@ const pkg = require("./package.json");
 puppeteer.use(StealthPlugin());
 
 let debug = process.env.DEBUG || false;
-
 console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
 
 let config = {};
@@ -33,6 +32,7 @@ const main = async () => {
     });
     config.delete("errored");
     debug = debug || config.get("debug");
+    const tmp = join(dirname(config.path), "tmp")
     if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
     if (debug) console.log(process.execArgv, process.argv);
 
@@ -48,11 +48,6 @@ const main = async () => {
 
     firstStart(config);
 
-    const cfg = {
-      ...config.store,
-      tmp: join(dirname(config.path), "tmp"),
-    };
-
     const revision = getRevision(process.platform);
     process.on("unhandledRejection", async (err) => {
       await errorLogicWrapper(err, config, debug);
@@ -61,15 +56,16 @@ const main = async () => {
       path: join(dirname(config.path), `chromium-${revision}`),
     });
 
+    let chromiumBar
     const revisionInfo = await browserFetcher.download(revision, (transferred, total) => {
       if (!debug) {
-        if (!cfg.chromiumBar) {
-          cfg.chromiumBar = multibar.create(total, 0, {
+        if (!chromiumBar) {
+          chromiumBar = multibar.create(total, 0, {
             filename: `downloading ${chalk.green(`chromium-${revision}`)} `,
           });
           return null;
         }
-        return cfg.chromiumBar.update(transferred, {
+        return chromiumBar.update(transferred, {
           filename: `downloading ${chalk.green(`chromium-${revision}`)} (${((transferred / total) * 100).toFixed(
             2
           )}% downloaded)`,
@@ -80,11 +76,11 @@ const main = async () => {
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
-      maxConcurrency: cfg.concurrency,
-      timeout: cfg.timeout,
+      maxConcurrency: config.get('concurrency'),
+      timeout: config.get('timeout'),
       puppeteer,
       puppeteerOptions: {
-        headless: cfg.headless,
+        headless: config.get('headless'),
         executablePath: revisionInfo.executablePath,
         args: existsSync("/.dockerenv")
           ? ["--no-sandbox", "--disable-features=site-per-process"]
@@ -99,29 +95,35 @@ const main = async () => {
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
       const bar = debug ? undefined : makeBar(multibar);
-      if (type === "tukui") return tukuiLogic(config, page, value, bar, cfg.tmp);
-      if (type === "curse") return curseLogic(config, page, value, bar, cfg.tmp);
-      if (type === "tsm") return tsmLogic(config, page, value, bar, cfg.tmp);
-      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, cfg.tmp);
+      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp);
+      if (type === "curse") return curseLogic(config, page, value, bar, tmp);
+      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp);
+      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp);
       return null;
     });
 
     const queue = [];
 
-    if (cfg.addons.curse && Array.isArray(cfg.addons.curse) && cfg.addons.curse.length !== 0) {
-      cfg.addons.curse.map((value) => queue.push({ type: "curse", value }));
+    const curse = config.get('addons.curse')
+    if (curse && Array.isArray(curse) && curse.length !== 0) {
+      curse.map((value) => queue.push({ type: "curse", value }));
     }
 
-    if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
-      cfg.addons.wowinterface.map((value) => queue.push({ type: "wowinterface", value }));
+    const wowinterface = config.get('addons.curse')
+    if (wowinterface && Array.isArray(wowinterface) && wowinterface.length !== 0) {
+      wowinterface.map((value) => queue.push({ type: "wowinterface", value }));
     }
-    if (cfg.addons.tukui) {
-      if (cfg.addons.tukui.tukui) queue.push({ type: "tukui", value: "tukui" });
-      if (cfg.addons.tukui.elvui) queue.push({ type: "tukui", value: "elvui" });
-      if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
-        [...cfg.addons.tukui.addons].map((value) => queue.push({ type: "tukui", value }));
+
+    const tukui = config.get('addons.tukui')
+    if (tukui) {
+      if (tukui.tukui) queue.push({ type: "tukui", value: "tukui" });
+      if (tukui.elvui) queue.push({ type: "tukui", value: "elvui" });
+      if (tukui.addons && Array.isArray(tukui.addons) && tukui.addons.length !== 0)
+        [...tukui.addons].map((value) => queue.push({ type: "tukui", value }));
     }
-    if (cfg.addons.tsm) {
+
+    const tsm = config.get('addons.tsm')
+    if (tsm) {
       ["helper", "tsm"].map((value) => queue.push({ type: "tsm", value }));
     }
 
@@ -136,7 +138,7 @@ const main = async () => {
     }
 
     if (!debug) await multibar.stop();
-    await cleanTmps(cfg);
+    await cleanTmps(config);
 
     return cluster.close();
   } catch (err) {

@@ -144,8 +144,8 @@ const schema = {
   },
 };
 
-const cleanTmps = async (cfg) => {
-  const tmps = await glob(`${cfg.tmp}-*`);
+const cleanTmps = async (tmp) => {
+  const tmps = await glob(`${tmp}-*`);
   const queue = tmps.map((t) => rmdir(t, { recursive: true }));
   return Promise.all(queue);
 };
@@ -250,7 +250,7 @@ const endLogic = async (config) => {
       );
     }
   }
-  if (process.__nexe && config.store && !("waitForKey" in config.store)) {
+  if (process.__nexe && config && config.store && !("waitForKey" in config.store)) {
     await waitToContinue();
   }
   if (config && config.get && config.get("waitForKey")) {
