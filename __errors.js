@@ -34,7 +34,7 @@ module.exports = {
   messages: {
     freshStart: (err, debug) => {
       console.log("");
-      console.log(chalk.bold("Fresh run or old configuration migrated."));
+      console.log(chalk.bold("Brand new installation or old configuration migrated."));
       if (err.message) console.log(`Please edit ${chalk.yellow(err.message)} to match your needs.`);
       console.log("");
       windowsPathWarn();
