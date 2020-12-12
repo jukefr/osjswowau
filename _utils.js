@@ -73,7 +73,10 @@ const schema = {
   fresh: { type: "boolean", default: true }, // used on first start, should remain disabled after
   headless: { type: "boolean", default: true }, // hide chromium windows
   concurrency: { type: "number", maximum: 10, minimum: 1, default: 5 }, // amount of addons that can be updated at the same time ("threads")
-  addonPath: { type: "string", default: "C:\\blabla\\bla..." },
+  addonPath: {
+    type: "string",
+    default: process.platform.includes("win") ? "C:\\path\\to\\addons\\folder\\..." : "path/to/addons/folder",
+  },
   timeout: {
     // how long an action can take (goto, click, wait, etc) in ms
     type: "number",
