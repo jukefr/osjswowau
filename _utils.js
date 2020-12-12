@@ -18,7 +18,6 @@ const getRevision = (p) => {
   throw new Error("unsupported OS currently sorry");
 };
 
-
 const getLatestTag = async () =>
   new Promise((resolve, reject) =>
     https
