@@ -24,7 +24,7 @@ const windowsPathWarn = () => {
     );
   if (process.platform === "win32" || process.platform === "win64")
     console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
-}
+};
 
 module.exports = {
   FreshStartError,
@@ -37,7 +37,7 @@ module.exports = {
       console.log(chalk.bold("Fresh run or old configuration migrated."));
       if (err.message) console.log(`Please edit ${chalk.yellow(err.message)} to match your needs.`);
       console.log("");
-      windowsPathWarn()
+      windowsPathWarn();
       console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug && err) console.log(chalk.red("cause"), err.cause || err);
     },
@@ -64,9 +64,15 @@ module.exports = {
     configSyntax: (err, debug) => {
       console.log("");
       console.log(chalk.red("Your configuration file may have han an incorrect syntax. Please check it carefully."));
-      console.log(chalk.red(`JSON can be strict and only allows double quotes ${chalk.bold('"')} and no trailing commas ${chalk.bold(',')}.`));
+      console.log(
+        chalk.red(
+          `JSON can be strict and only allows double quotes ${chalk.bold('"')} and no trailing commas ${chalk.bold(
+            ","
+          )}.`
+        )
+      );
       console.log("");
-      windowsPathWarn()
+      windowsPathWarn();
       console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug) console.log(chalk.red("cause"), err.stack || err);
     },
