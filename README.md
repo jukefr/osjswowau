@@ -8,7 +8,7 @@
 - emulates a real user session so no rate limiting (hopefully)
 - full binary packages available on the [github releases](https://github.com/jukefr/osjswowau/releases)
 
-![demo gif](https://i.imgur.com/Xsu2Jz0.gif)
+![demo gif](https://i.imgur.com/dc7PzLG.gif)
 
 ## addon sources
 - **curse addons** (latest, md5 checked)
