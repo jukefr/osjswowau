@@ -23,15 +23,8 @@ $ osjswowau
 ## installation
 the first time we bootstrap the configuration file and kill the process to give you some time to edit it
 
-### binary
-download a prebuilt binary from the [github releases](https://github.com/jukefr/osjswowau/releases) and run it
-
-on **windows** place it somewhere that is reference in your `PATH` variable manually
-
-for **linux and macos** this command should work, make sure to replace the downloaded file name
-```bash
-$ sudo install ~/Downloads/osjswowau-platformXX /usr/local/bin/osjswowau
-```
+### binary (easiest)
+simply download the binary in the [github releases](https://github.com/jukefr/osjswowau/releases) and open it
 
 ### npm
 ```bash

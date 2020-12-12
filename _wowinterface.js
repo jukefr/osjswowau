@@ -21,7 +21,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
     throw new WaitTimeoutError();
   };
 
-  if (bar) bar.update(1, { filename: `downloading ${chalk.green(name)}` });
+  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
@@ -36,7 +36,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
 
   const filename = await wait(null, name);
 
-  if (bar) bar.update(2, { filename: `extracting ${chalk.green(basename(filename))}` });
+  if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -46,7 +46,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
       .on("error", (err) => reject(err))
   );
 
-  if (bar) bar.update(3, { filename: `deleting ${chalk.green(basename(filename))}` });
+  if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   return page.close();
 };

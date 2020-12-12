@@ -164,8 +164,8 @@ class WaitTimeoutError extends Error {
 
 const firstStart = (config) => {
   if (config.get("fresh")) {
-    log.info("First run or configuration updated.");
-    log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
+    console.log("First run or configuration updated.");
+    console.log(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
     if (process.platform === "win32" || process.platform === "win64")
       log.info(
         `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
@@ -173,7 +173,7 @@ const firstStart = (config) => {
         )} (AddOns folder) variable.`
       );
     if (process.platform === "win32" || process.platform === "win64")
-      log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
+      console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
     config.set("fresh", false);
     throw new FreshStartError();
   }
@@ -184,27 +184,44 @@ const delay = (d) =>
     setTimeout(resolve, d);
   });
 
-const errorLogic = (err, config) => {
+const errorLogic = (err) => {
   switch (err.constructor) {
     case FreshStartError:
+      console.log("");
       console.log(chalk.red("This is your first run. Terminating so you can edit config."));
       if (debug) console.log(chalk.red("cause"), err.cause || err);
       break;
     case SyntaxError:
+      console.log("");
       console.log(chalk.red("Your configuration file probably has an incorrect syntax."));
       if (debug) console.log(chalk.red("cause"), err.cause || err);
       break;
     default:
+      console.log("");
       console.log(chalk.red("Something went wrong. Usually a re-run of the command should work."));
-      console.log(chalk.red("Otherwise enable debug mode to learn more. (start with DEBUG=1 env)"));
-      console.log(chalk.italic(chalk.red(err.message)));
+      console.log(
+        chalk.red(`Otherwise enable debug mode to learn more. (start with ${chalk.bold(chalk.red("DEBUG=1"))} env)`)
+      );
+      console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug) console.log(chalk.red(err.constructor.name));
       if (debug) console.log(chalk.red("trace"), err.stack || err);
   }
-  if (config.set) config.set("errored", "1");
 };
 
-const endLogic = (latest) => {
+const waitToContinue = () => {
+  console.log("");
+  console.log(chalk.bold("Press any key to continue..."));
+  process.stdin.setRawMode(true);
+  return new Promise((resolve) =>
+    process.stdin.once("data", () => {
+      process.stdin.setRawMode(false);
+      return resolve();
+    })
+  );
+};
+
+const endLogic = async () => {
+  const latest = await getLatestTag();
   if (latest) {
     const latestName = latest.name.replace("v", "");
     console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "finished");
@@ -223,17 +240,15 @@ const endLogic = (latest) => {
       );
     }
   }
+  if (process.__nexe) { // TODO: might change be careful
+    await waitToContinue();
+  }
 };
 
-const errorLogicWrapper = (err, config, latest) => {
-  errorLogic(err, config);
-  if (!config.get) {
-    // config is bad
-    endLogic();
-    process.exit(1);
-  }
-  if (config.get("errored")) endLogic(latest);
-  if (config.get("errored")) process.exit(Number(config.get("errored")));
+const errorLogicWrapper = async (err) => {
+  errorLogic(err);
+  await endLogic();
+  process.exit(1);
 };
 
 module.exports = {
