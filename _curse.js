@@ -7,7 +7,7 @@ const { delay, deleteFile } = require("./_utils");
 const curseLogic = async (page, name, bar, cfg) => {
   const wait = async (m) => {
     const start = Date.now();
-    while ((Date.now() - start) < cfg.timeout) {
+    while (Date.now() - start < cfg.timeout) {
       const [fname] = await glob(`${cfg.tmp}-${name}/*.zip`);
       if (existsSync(fname)) {
         const md5 = await md5File(fname);

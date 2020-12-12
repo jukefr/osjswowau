@@ -9,7 +9,7 @@ const wowinterfaceLogic = async (page, name = "tukui", bar, cfg) => {
     const start = Date.now();
     let size;
 
-    while ((Date.now() - start) < cfg.timeout) {
+    while (Date.now() - start < cfg.timeout) {
       const [fname] = await glob(`${cfg.tmp}-${m}/*.zip`);
       if (existsSync(fname)) {
         if (size && size !== 0 && size === statSync(fname).size) return fname;
