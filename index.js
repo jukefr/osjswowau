@@ -144,7 +144,7 @@ const main = async () => {
   } catch (err) {
     await errorLogicWrapper(err, config, debug);
   } finally {
-    await endLogic();
+    await endLogic(config);
     process.exit(0);
   }
   return null;
