@@ -1,6 +1,7 @@
 const chalk = require("chalk");
 const { basename } = require("path");
-const { delay, deleteFile, waitFile, unzip } = require("./_utils");
+const { deleteFile, extractFile } = require("./__utils");
+const { waitFile, waitFor } = require("./__wait");
 
 const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
   await page._client.send("Page.setDownloadBehavior", {
@@ -23,7 +24,7 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
         waitUntil: "networkidle0",
       });
   }
-  await delay(config.get("delay"));
+  await waitFor(config.get("delay"));
   switch (name) {
     case "tukui":
     case "elvui":
@@ -35,7 +36,7 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   const filename = await waitFile(config, null, name, tmp);
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await unzip(config, filename);
+  await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });

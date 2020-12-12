@@ -6,11 +6,13 @@ const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper, getRevision } = require("./_utils");
+const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
+const { schema, migrations } = require("./__conf");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
+const { handleFreshStart, handleError, handleCleanup } = require("./__handlers");
 const pkg = require("./package.json");
 
 puppeteer.use(StealthPlugin());
@@ -46,30 +48,9 @@ const main = async () => {
       cliProgress.Presets.legacy
     );
 
-    firstStart(config);
+    handleFreshStart(config);
 
-    const revision = getRevision(process.platform);
-    const browserFetcher = puppeteer.createBrowserFetcher({
-      path: join(dirname(config.path), `chromium-${revision}`),
-    });
-
-    let chromiumBar;
-    const revisionInfo = await browserFetcher.download(revision, (transferred, total) => {
-      if (!debug) {
-        if (!chromiumBar) {
-          chromiumBar = multibar.create(total, 0, {
-            filename: `downloading ${chalk.green(`chromium-${revision}`)} `,
-          });
-          return null;
-        }
-        return chromiumBar.update(transferred, {
-          filename: `downloading ${chalk.green(`chromium-${revision}`)} (${((transferred / total) * 100).toFixed(
-            2
-          )}% downloaded)`,
-        });
-      }
-      return null;
-    });
+    const revisionInfo = await getChromium(config, puppeteer, multibar, debug);
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
@@ -85,13 +66,11 @@ const main = async () => {
       },
     });
 
-    const makeBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
-
     await cluster.task(async ({ page, data: { type, value } }) => {
       await page.setDefaultNavigationTimeout(config.get("timeout"));
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
-      const bar = debug ? undefined : makeBar(multibar, value);
+      const bar = debug ? undefined : createBar(multibar, value);
       if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp);
       if (type === "curse") return curseLogic(config, page, value, bar, tmp);
       if (type === "tsm") return tsmLogic(config, page, value, bar, tmp);
@@ -128,20 +107,20 @@ const main = async () => {
       await Promise.all(queue.map((v) => cluster.execute(v)));
     } catch (err) {
       await cluster.close();
-      await errorLogicWrapper(err, config, debug);
+      await handleError(err, config, debug);
     } finally {
       await cluster.idle();
       await cluster.close();
     }
 
     if (!debug) await multibar.stop();
-    await cleanTmps(config);
+    await deleteTmpDirs(config);
 
     return cluster.close();
   } catch (err) {
-    await errorLogicWrapper(err, config, debug);
+    await handleError(err, config, debug);
   } finally {
-    await endLogic(config);
+    await handleCleanup(config);
     process.exit(0);
   }
   return null;

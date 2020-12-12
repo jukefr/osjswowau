@@ -1,6 +1,7 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { delay, deleteFile, waitMd5, unzip } = require("./_utils");
+const { deleteFile, extractFile } = require("./__utils");
+const { waitMd5, waitFor } = require("./__wait");
 
 const curseLogic = async (config, page, name, bar, tmp) => {
   await page._client.send("Page.setDownloadBehavior", {
@@ -15,7 +16,7 @@ const curseLogic = async (config, page, name, bar, tmp) => {
     const maybeOptions = await frame.$("button[title='Options']");
     if (maybeOptions) await maybeOptions.click();
     if (maybeOptions) {
-      await delay(1000);
+      await waitFor(1000);
       const newFrames = page.frames();
       for (const newFrame of newFrames) {
         const maybeReject = await newFrame.$("button[title='Reject All']");
@@ -42,7 +43,7 @@ const curseLogic = async (config, page, name, bar, tmp) => {
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), waitMd5(config, md5, name, tmp)]);
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await unzip(config, filename);
+  await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });

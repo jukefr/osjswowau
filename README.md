@@ -41,7 +41,7 @@ otherwise, try simply re-running the command a second time before changing the c
 
 the first time you use the app it will tell you where the configuration file is located
 
-`_utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
+`__utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
 
 ### curse addons
 curse addon names go in `addons.curse`

@@ -1,6 +1,7 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { delay, deleteFile, waitFile, unzip } = require("./_utils");
+const { deleteFile, extractFile } = require("./__utils");
+const { waitFile, waitFor } = require("./__wait");
 
 const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
   await page._client.send("Page.setDownloadBehavior", {
@@ -10,7 +11,7 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
   await page.goto("https://www.tradeskillmaster.com/install", {
     waitUntil: "networkidle2",
   });
-  await delay(config.get("delay"));
+  await waitFor(config.get("delay"));
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   let filename;
   if (name === "tsm") {
@@ -25,7 +26,7 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
     ]);
   }
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await unzip(config, filename);
+  await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
