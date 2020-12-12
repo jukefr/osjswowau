@@ -1,13 +1,13 @@
 const puppeteer = require("puppeteer-extra");
-const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
 const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const asyncPool = require( "tiny-async-pool");
 const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
-const { schema, migrations } = require("./__conf");
+const { getConf } = require("./__conf");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
@@ -18,20 +18,15 @@ const pkg = require("./package.json");
 puppeteer.use(StealthPlugin());
 
 let debug = process.env.DEBUG || false;
-console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
 
 let config = {};
 
-const main = async () => {
+const main = async (testing) => {
+  if (!testing) console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
+
   try {
-    config = new Conf({
-      projectName: pkg.name,
-      projectVersion: pkg.version,
-      clearInvalidConfig: false,
-      projectSuffix: "",
-      schema,
-      migrations,
-    });
+    config = getConf(testing)
+    console.log(config.path)
     config.delete("errored");
     debug = debug || config.get("debug");
     const tmp = join(dirname(config.path), "tmp");
@@ -104,10 +99,10 @@ const main = async () => {
     }
 
     try {
-      await Promise.all(queue.map((v) => cluster.execute(v)));
+      await asyncPool(config.get('concurrency'), queue, (v) => cluster.execute(v));
     } catch (err) {
       await cluster.close();
-      await handleError(err, config, debug);
+      await handleError(err, config, debug, testing);
     } finally {
       await cluster.idle();
       await cluster.close();
@@ -118,14 +113,22 @@ const main = async () => {
 
     return cluster.close();
   } catch (err) {
-    await handleError(err, config, debug);
+    await handleError(err, config, debug, testing);
   } finally {
     await handleCleanup(config);
-    process.exit(0);
+    if (!module.parent) process.exit(0);
   }
-  return null;
+  return config;
 };
 
-module.exports = main;
+if (!module.parent) {
+  main(process.argv[2]);
+} else {
+  module.exports = main;
+}
 
-main();
+
+
+
+
+

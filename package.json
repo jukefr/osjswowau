@@ -11,7 +11,7 @@
   "bin": "./osjswowau",
   "scripts": {
     "start": "./osjswowau",
-    "clean": "rm -rf dist",
+    "clean": "rimraf dist",
     "build-linux64": "nexe -t linux-x64-12.9.1 -o dist/osjswowau-linux64 index.js",
     "build-linux86": "nexe -t linux-x86-12.9.1 -o dist/osjswowau-linux86 index.js",
     "build-windows64": "nexe -t windows-x64-12.9.1 -o dist/osjswowau-windows64 index.js",
@@ -20,6 +20,7 @@
     "build": "concurrently \"npm:build-*\"",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
+    "test": "ava",
     "release": "dotenv release-it -- --ci"
   },
   "keywords": [
@@ -41,6 +42,8 @@
     "puppeteer-core": "^5.5.0",
     "puppeteer-extra": "^3.1.15",
     "puppeteer-extra-plugin-stealth": "^2.6.5",
+    "rimraf": "^3.0.2",
+    "tiny-async-pool": "^1.2.0",
     "unzipper": "^0.10.11"
   },
   "resolutions": {
@@ -48,12 +51,14 @@
   },
   "devDependencies": {
     "auto-changelog": "^2.2.1",
+    "ava": "^3.14.0",
     "concurrently": "^5.3.0",
     "dotenv-cli": "^4.0.0",
     "eslint": "^7.15.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.0.0",
     "eslint-plugin-import": "^2.22.1",
+    "execa": "^5.0.0",
     "nexe": "^3.3.7",
     "prettier": "^2.2.1",
     "release-it": "^14.2.2"
@@ -100,5 +105,10 @@
       "node": true,
       "es6": true
     }
+  },
+  "ava": {
+    "files": [
+      ".test.js"
+    ]
   }
 }

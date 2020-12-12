@@ -71,10 +71,11 @@ const handleCleanup = async (config) => {
   return null;
 };
 
-const handleError = async (err, config, debug) => {
+const handleError = async (err, config, debug, testing) => {
   errorLogic(err, debug);
   await handleCleanup(config);
-  process.exit(1);
+  if (testing) throw err
+  if (!module.parent) process.exit(1);
 };
 
 module.exports = {

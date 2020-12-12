@@ -1,14 +1,18 @@
 const chalk = require("chalk");
-const { createReadStream, rmdirSync, unlinkSync } = require("fs");
-const glob = require("glob-promise");
+const { createReadStream, unlinkSync } = require("fs");
 const https = require("https");
 const unzipper = require("unzipper");
 const { join, dirname } = require("path");
+const rimraf = require('rimraf')
 const { BadOsError } = require("./__errors");
 
 const createBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
 
 const deleteFile = (path) => unlinkSync(path);
+
+const deleteFolder = (folder) => new Promise((resolve, reject) => {
+  rimraf(folder, (er) => er ? reject(er) : resolve())
+})
 
 // TODO: find an automatic way to do this....
 const getChromiumRevision = (p) => {
@@ -64,11 +68,7 @@ const getLatestVersion = async () =>
       .on("error", (err) => reject(err))
   );
 
-const deleteTmpDirs = async (tmp) => {
-  const tmps = await glob(`${tmp}-*`);
-  const queue = tmps.map((t) => rmdirSync(t, { recursive: true }));
-  return Promise.all(queue);
-};
+const deleteTmpDirs = async (tmp) => deleteFolder(`${tmp}*`);
 
 const extractFile = (config, filename) =>
   new Promise((resolve, reject) =>
@@ -86,4 +86,5 @@ module.exports = {
   deleteFile,
   extractFile,
   createBar,
+  deleteFolder,
 };
