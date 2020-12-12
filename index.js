@@ -109,7 +109,7 @@ const main = async () => {
       curse.map((value) => queue.push({ type: "curse", value }));
     }
 
-    const wowinterface = config.get("addons.curse");
+    const wowinterface = config.get("addons.wowinterface");
     if (wowinterface && Array.isArray(wowinterface) && wowinterface.length !== 0) {
       wowinterface.map((value) => queue.push({ type: "wowinterface", value }));
     }
