@@ -16,7 +16,6 @@
     "build:windows64": "nexe -t windows-x64-12.9.1 -o dist/osjswowau-windows64 index.js",
     "build:windows86": "nexe -t windows-x86-12.9.1 -o dist/osjswowau-windows86 index.js",
     "build:mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
-    "build": "rm -rf dist && npm run build:linux64 && npm run build:linux86 && npm run build:windows64 && npm run build:windows86 && npm run build:mac64 ",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
     "release": "dotenv release-it --"
@@ -64,7 +63,11 @@
       "before:init": [],
       "after:bump": [
         "npm run changelog",
-        "npm run build"
+        "npm run build:linux64",
+        "npm run build:linux86",
+        "npm run build:windows64",
+        "npm run build:linux86",
+        "npm run build:mac64"
       ]
     },
     "github": {
