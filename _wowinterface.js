@@ -1,6 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { delay, deleteFile, waitFile, unzip } = require("./_utils");
+const { deleteFile, waitFile, unzip } = require("./_utils");
 
 const wowinterfaceLogic = async (config, page, name = "tukui", bar, tmp) => {
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
@@ -14,7 +14,6 @@ const wowinterfaceLogic = async (config, page, name = "tukui", bar, tmp) => {
         waitUntil: "networkidle2",
       });
   }
-  await delay(config.get("delay"));
   const filename = await waitFile(config, null, name, tmp);
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
   await unzip(config, filename);
