@@ -20,7 +20,7 @@ puppeteer.use(StealthPlugin());
 const main = async () => {
   try {
     const config = new Conf({
-      projectName: 'osjswowau',
+      projectName: "osjswowau",
       schema,
       migrations,
     });
@@ -39,7 +39,7 @@ const main = async () => {
 
     const cfg = {
       ...config.store,
-      tmp: join(dirname(config.path), 'tmp'),
+      tmp: join(dirname(config.path), "tmp"),
     };
 
     process.on("unhandledRejection", (reason) => {
@@ -58,7 +58,7 @@ const main = async () => {
       throw new Error("unsupported OS currently sorry");
     };
 
-    const revision = getRevision(process.platform)
+    const revision = getRevision(process.platform);
 
     const browserFetcher = puppeteer.createBrowserFetcher({
       path: join(dirname(config.path), `chromium-${revision}`),
