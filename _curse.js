@@ -1,34 +1,13 @@
-const { existsSync, createReadStream } = require("fs");
-const md5File = require("md5-file");
-const unzipper = require("unzipper");
-const glob = require("glob-promise");
 const { basename } = require("path");
 const chalk = require("chalk");
-const { delay, deleteFile, WaitTimeoutError } = require("./_utils");
+const { delay, deleteFile, waitMd5, unzip } = require("./_utils");
 
-const curseLogic = async (page, name, bar, cfg) => {
-  const wait = async (m) => {
-    const start = Date.now();
-    while (Date.now() - start < cfg.timeout) {
-      const [fname] = await glob(`${cfg.tmp}-${name}/*.zip`);
-      if (existsSync(fname)) {
-        const md5 = await md5File(fname);
-        if (md5 === m) {
-          return fname;
-        }
-      }
-      await delay(cfg.polling);
-    }
-    throw new WaitTimeoutError();
-  };
-
+const curseLogic = async (config, page, name, bar, tmp) => {
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
-
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
-    downloadPath: `${cfg.tmp}-${name}`,
+    downloadPath: `${tmp}-${name}`,
   });
-
   await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`, {
     waitUntil: "networkidle2",
   });
@@ -45,7 +24,6 @@ const curseLogic = async (page, name, bar, cfg) => {
       }
     }
   }
-
   const fileListNodes = await page.$$(".listing tbody tr");
   for (let i = 0; i < fileListNodes.length; i += 1) {
     const el = fileListNodes[i].asElement();
@@ -56,29 +34,18 @@ const curseLogic = async (page, name, bar, cfg) => {
       break;
     }
   }
-
   const md5Node = await page.$("div.flex:nth-child(7) > span:nth-child(2)");
   const md5 = await (await md5Node.getProperty("innerText")).jsonValue();
-
   await Promise.all([
     page.click("article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)"),
     page.waitForNavigation(),
   ]);
-
-  const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), wait(md5)]);
-
+  const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), waitMd5(config, md5, name, tmp)]);
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-
-  await new Promise((resolve, reject) =>
-    createReadStream(filename)
-      .on("error", (err) => reject(err))
-      .pipe(unzipper.Extract({ path: cfg.addonPath }))
-      .on("close", (err) => (err ? reject(err) : resolve()))
-      .on("error", (err) => reject(err))
-  );
-
+  await unzip(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
+  if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
   return page.close();
 };
 

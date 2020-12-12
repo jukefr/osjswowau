@@ -6,22 +6,20 @@ const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper } = require("./_utils");
+const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper, getRevision} = require("./_utils");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
 const pkg = require("./package.json");
 
-const debug = process.env.DEBUG || false;
-if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
-if (debug) console.log(process.argv);
+puppeteer.use(StealthPlugin());
+
+let debug = process.env.DEBUG || false;
 
 console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
 
 let config = {};
-
-puppeteer.use(StealthPlugin());
 
 const main = async () => {
   try {
@@ -34,6 +32,9 @@ const main = async () => {
       migrations,
     });
     config.delete("errored");
+    debug = debug || config.get("debug");
+    if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
+    if (debug) console.log(process.execArgv, process.argv);
 
     const multibar = new cliProgress.MultiBar(
       {
@@ -52,17 +53,9 @@ const main = async () => {
       tmp: join(dirname(config.path), "tmp"),
     };
 
-    // TODO: find an automatic way to do this....
-    const getRevision = (p) => {
-      if (p === "linux") return "812859";
-      if (p === "mac") return "812851";
-      if (p === "win64" || p === "win32") return "812899";
-      throw new Error("unsupported OS currently sorry");
-    };
-
     const revision = getRevision(process.platform);
     process.on("unhandledRejection", async (err) => {
-      await errorLogicWrapper(err);
+      await errorLogicWrapper(err, config, debug);
     });
     const browserFetcher = puppeteer.createBrowserFetcher({
       path: join(dirname(config.path), `chromium-${revision}`),
@@ -99,17 +92,17 @@ const main = async () => {
       },
     });
 
-    const makeBar = (mb) => mb.create(3, 0, { filename: "" });
+    const makeBar = (mb) => mb.create(4, 0, { filename: "" });
 
     await cluster.task(async ({ page, data: { type, value } }) => {
       await page.setDefaultNavigationTimeout(config.get("timeout"));
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
       const bar = debug ? undefined : makeBar(multibar);
-      if (type === "tukui") return tukuiLogic(page, value, bar, cfg);
-      if (type === "curse") return curseLogic(page, value, bar, cfg);
-      if (type === "tsm") return tsmLogic(page, value, bar, cfg);
-      if (type === "wowinterface") return wowinterfaceLogic(page, value, bar, cfg);
+      if (type === "tukui") return tukuiLogic(config, page, value, bar, cfg.tmp);
+      if (type === "curse") return curseLogic(config, page, value, bar, cfg.tmp);
+      if (type === "tsm") return tsmLogic(config, page, value, bar, cfg.tmp);
+      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, cfg.tmp);
       return null;
     });
 
@@ -136,7 +129,7 @@ const main = async () => {
       await Promise.all(queue.map((v) => cluster.execute(v)));
     } catch (err) {
       await cluster.close();
-      await errorLogicWrapper(err);
+      await errorLogicWrapper(err, config, debug);
     } finally {
       await cluster.idle();
       await cluster.close();
@@ -147,7 +140,7 @@ const main = async () => {
 
     return cluster.close();
   } catch (err) {
-    await errorLogicWrapper(err);
+    await errorLogicWrapper(err, config, debug);
   } finally {
     await endLogic();
     process.exit(0);

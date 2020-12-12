@@ -1,13 +1,23 @@
 const chalk = require("chalk");
+const { existsSync, statSync, createReadStream } = require("fs");
 const { rmdir, unlink } = require("fs").promises;
 const glob = require("glob-promise");
 const { inspect } = require("util");
 const https = require("https");
+const md5File = require("md5-file");
+const unzipper = require("unzipper");
 const pkg = require("./package.json");
 
-const debug = process.env.DEBUG || false;
-
 const deleteFile = (path) => unlink(path);
+
+// TODO: find an automatic way to do this....
+const getRevision = (p) => {
+  if (p === "linux") return "812859";
+  if (p === "mac") return "812851";
+  if (p === "win64" || p === "win32") return "812899";
+  throw new Error("unsupported OS currently sorry");
+};
+
 
 const getLatestTag = async () =>
   new Promise((resolve, reject) =>
@@ -77,6 +87,7 @@ const schema = {
     type: "string",
     default: process.platform.includes("win") ? "C:\\path\\to\\addons\\folder\\..." : "path/to/addons/folder",
   },
+  waitForKey: { type: "boolean", default: !!process.__nexe }, // wait for a key to continue, enabled by default on nexe
   timeout: {
     // how long an action can take (goto, click, wait, etc) in ms
     type: "number",
@@ -184,7 +195,7 @@ const delay = (d) =>
     setTimeout(resolve, d);
   });
 
-const errorLogic = (err) => {
+const errorLogic = (err, debug) => {
   switch (err.constructor) {
     case FreshStartError:
       console.log("");
@@ -220,7 +231,7 @@ const waitToContinue = () => {
   );
 };
 
-const endLogic = async () => {
+const endLogic = async (config) => {
   const latest = await getLatestTag();
   if (latest) {
     const latestName = latest.name.replace("v", "");
@@ -240,19 +251,64 @@ const endLogic = async () => {
       );
     }
   }
-  if (process.__nexe) {
-    // TODO: might change be careful
+  if (process.__nexe && config.store && !("waitForKey" in config.store)) {
+    await waitToContinue();
+  }
+  if (config && config.get && config.get("waitForKey")) {
     await waitToContinue();
   }
 };
 
-const errorLogicWrapper = async (err) => {
-  errorLogic(err);
-  await endLogic();
+const errorLogicWrapper = async (err, config, debug) => {
+  errorLogic(err, debug);
+  await endLogic(config);
   process.exit(1);
 };
 
+const waitMd5 = async (config, m, name, tmp) => {
+  const start = Date.now();
+  while (Date.now() - start < config.get("timeout")) {
+    const [fname] = await glob(`${tmp}-${name}/*.zip`);
+    if (existsSync(fname)) {
+      const md5 = await md5File(fname);
+      if (md5 === m) {
+        return fname;
+      }
+    }
+    await delay(config.get("polling"));
+  }
+  throw new WaitTimeoutError();
+};
+
+const waitFile = async (config, f, m, tmp) => {
+  const start = Date.now();
+  let size;
+
+  while (Date.now() - start < config.get("timeout")) {
+    const [fname] = await glob(`${tmp}-${m}/*.zip`);
+    if (existsSync(fname)) {
+      if (size && size !== 0 && size === statSync(fname).size) return fname;
+      size = statSync(fname).size;
+    }
+    await delay(config.get("polling"));
+  }
+  throw new WaitTimeoutError();
+};
+
+const unzip = (config, filename) =>
+  new Promise((resolve, reject) =>
+    createReadStream(filename)
+      .on("error", (err) => reject(err))
+      .pipe(unzipper.Extract({ path: config.get("addonPath") }))
+      .on("close", (err) => (err ? reject(err) : resolve()))
+      .on("error", (err) => reject(err))
+  );
+
 module.exports = {
+  getRevision,
+  unzip,
+  waitFile,
+  waitMd5,
   firstStart,
   schema,
   delay,
