@@ -3,33 +3,29 @@ const moment = require("moment");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
-const { log, delay } = require("./_utils");
+const { delay, deleteFile } = require("./_utils");
 
-const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
-  let bar;
-
-  cfg.debug || (bar = multibar.create(3, 0));
+const tsmLogic = async (page, name = "tsm", bar, cfg) => {
   const wait = async (f, m) => {
     const start = moment();
     let size;
 
     while (moment().diff(start, "ms") < cfg.timeout) {
-      [f] = await glob(`${cfg.tmp}\-${m}/*.zip`);
-      if (existsSync(f)) {
-        if (size && size !== 0 && size === statSync(f).size) return f;
-        size = statSync(f).size;
-        cfg.debug && log.debug(name, "size", size);
+      const [fname] = await glob(`${cfg.tmp}-${m}/*.zip`);
+      if (existsSync(fname)) {
+        if (size && size !== 0 && size === statSync(fname).size) return fname;
+        size = statSync(fname).size;
       }
-      cfg.debug && log.debug(name, "waiting", cfg.polling, "ms");
       await delay(cfg.polling);
     }
+    return null;
   };
 
-  cfg.debug || bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: name });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
-    downloadPath: `${cfg.tmp}\-${name}`,
+    downloadPath: `${cfg.tmp}-${name}`,
   });
 
   await page.goto("https://www.tradeskillmaster.com/install");
@@ -38,21 +34,11 @@ const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
 
   let filename;
   if (name === "tsm") {
-    [_, filename] = await Promise.all([
-      page.$eval("div.col-sm-6:nth-child(1) > a:nth-child(2)", (x) =>
-        x.click()
-      ),
-      wait(null, name),
-    ]);
+    [, filename] = await Promise.all([page.click("div.col-sm-6:nth-child(1) > a:nth-child(2)"), wait(null, name)]);
   } else {
-    [_, filename] = await Promise.all([
-      page.$eval("div.col-sm-6:nth-child(1) > a:nth-child(5)", (x) =>
-        x.click()
-      ),
-      wait(null, name),
-    ]);
+    [, filename] = await Promise.all([page.click("div.col-sm-6:nth-child(1) > a:nth-child(5)"), wait(null, name)]);
   }
-  cfg.debug || bar.update(2, { filename: basename(filename) });
+  if (bar) bar.update(2, { filename: basename(filename) });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -63,7 +49,8 @@ const tsmLogic = async (page, name = "tsm", multibar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  cfg.debug || bar.update(3, { filename: basename(filename) });
+  if (bar) bar.update(3, { filename: basename(filename) });
+  await deleteFile(filename);
   return page.close();
 };
 

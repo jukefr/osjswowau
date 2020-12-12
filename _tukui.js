@@ -3,67 +3,61 @@ const moment = require("moment");
 const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
-const { log, delay } = require("./_utils");
+const { delay, deleteFile } = require("./_utils");
 
-const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
-  let bar;
-
-  cfg.debug || (bar = multibar.create(3, 0));
+const tukuiLogic = async (page, name = "tukui", bar, cfg) => {
   const wait = async (f, m) => {
     const start = moment();
     let size;
 
     while (moment().diff(start, "ms") < cfg.timeout) {
-      [f] = await glob(`${cfg.tmp}\-${m}/*.zip`);
-      if (existsSync(f)) {
-        if (size && size !== 0 && size === statSync(f).size) return f;
-        size = statSync(f).size;
-        cfg.debug && log.debug(name, "size", size);
+      const [fname] = await glob(`${cfg.tmp}-${m}/*.zip`);
+      if (existsSync(fname)) {
+        if (size && size !== 0 && size === statSync(fname).size) return fname;
+        size = statSync(fname).size;
       }
-      cfg.debug && log.debug(name, "waiting", cfg.polling, "ms");
       await delay(cfg.polling);
     }
+    return null;
   };
 
-  cfg.debug || bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: name });
 
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
-    downloadPath: `${cfg.tmp}\-${name}`,
+    downloadPath: `${cfg.tmp}-${name}`,
   });
 
   switch (name) {
     case "elvui":
-      await page.goto("https://www.tukui.org/download.php?ui=elvui");
+      await page.goto("https://www.tukui.org/download.php?ui=elvui", {
+        waitUntil: "networkidle2",
+      });
       break;
     case "tukui":
-      await page.goto("https://www.tukui.org/download.php?ui=tukui");
+      await page.goto("https://www.tukui.org/download.php?ui=tukui", {
+        waitUntil: "networkidle2",
+      });
       break;
     default:
-      await page.goto(`https://www.tukui.org/addons.php?id=${name}`);
+      await page.goto(`https://www.tukui.org/addons.php?id=${name}`, {
+        waitUntil: "networkidle2",
+      });
   }
   await delay(cfg.delay);
-
-  let filename;
 
   switch (name) {
     case "tukui":
     case "elvui":
-      [_, filename] = await Promise.all([
-        page.$eval("#download > div > div > a", (x) => x.click()),
-        wait(null, name),
-      ]);
+      await page.click("#download > div > div > a");
       break;
     default:
-      [_, filename] = await Promise.all([
-        page.$eval("div.col-md-3:nth-child(3) > a:nth-child(1)", (x) =>
-          x.click()
-        ),
-        wait(null, name),
-      ]);
+      await page.click("div.col-md-3:nth-child(3) > a:nth-child(1)");
   }
 
-  cfg.debug || bar.update(2, { filename: basename(filename) });
+  const filename = await wait(null, name);
+
+  if (bar) bar.update(2, { filename: basename(filename) });
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
@@ -74,7 +68,8 @@ const tukuiLogic = async (page, name = "tukui", multibar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  cfg.debug || bar.update(3, { filename: basename(filename) });
+  if (bar) bar.update(3, { filename: basename(filename) });
+  await deleteFile(filename);
   return page.close();
 };
 

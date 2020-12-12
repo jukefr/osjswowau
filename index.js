@@ -2,64 +2,51 @@ const puppeteer = require("puppeteer-extra");
 const Conf = require("conf");
 const { join, dirname } = require("path");
 const cliProgress = require("cli-progress");
-const { firstStart, cleanTmps, schema, log, migrations } = require("./_utils");
+const chalk = require("chalk");
+const { existsSync } = require("fs");
+const { Cluster } = require("puppeteer-cluster");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const { firstStart, cleanTmps, schema, migrations, getLatestTag } = require("./_utils");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
-const updateNotifier = require("update-notifier");
 const pkg = require("./package.json");
-const chalk = require("chalk");
-const { existsSync } = require("fs");
-const { Cluster } = require("puppeteer-cluster");
-const notifier = updateNotifier({ pkg, updateCheckInterval: 15000 });
-const download = require("download-chromium");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
+
 puppeteer.use(StealthPlugin());
 
 const main = async () => {
-  let debugState = false;
-  let multibar;
-  let chromiumBar;
-  let cfg
-
   try {
     const config = new Conf({
       schema,
       migrations,
     });
 
-    debugState = config.get("debug");
-
-    debugState ||
-      (multibar = new cliProgress.MultiBar(
-        {
-          clearOnComplete: false,
-          format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
-          hideCursor: true,
-          barsize: 20,
-        },
-        cliProgress.Presets.legacy
-      ));
+    const multibar = new cliProgress.MultiBar(
+      {
+        clearOnComplete: false,
+        format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
+        hideCursor: true,
+        barsize: 20,
+      },
+      cliProgress.Presets.legacy
+    );
 
     firstStart(config);
 
-    cfg = {
+    const cfg = {
       ...config.store,
       tmp: join(dirname(config.path), config.get("tmp")),
     };
 
-    process.on("unhandledRejection", (reason, promise) => {
+    process.on("unhandledRejection", (reason) => {
       console.log(
-        chalk.red(
-          "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
-        )
+        chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
       );
       console.log(chalk.red("Enable debug mode to learn more."));
-      cfg.debug && console.log("unhandled rejection", reason.stack || reason);
-      if (notifier.update) {
-        notifier.notify();
-      }
+      if (cfg.debug) console.log("unhandled rejection", reason.stack || reason);
     });
 
     // TODO: find an automatic way to do this....
@@ -70,25 +57,24 @@ const main = async () => {
       throw new Error("unsupported OS currently sorry");
     };
 
-    const exec = await download({
-      revision: getRevision(process.platform),
-      onProgress: ({ percent, transferred, total }) => {
-        if (!debugState) {
-          if (!chromiumBar) {
-            return (chromiumBar = multibar.create(total, 0, {
-              filename: "chromium",
-            }));
-          }
-          return chromiumBar.update(transferred, {
-            filename: "chromium",
-          });
-        }
-        return log.debug({ percent, transferred, total });
-      },
-      installPath: join(dirname(config.path), "chromium"),
+    const browserFetcher = puppeteer.createBrowserFetcher({
+      path: join(dirname(config.path), `chromium-${getRevision(process.platform)}`),
     });
 
-    cfg.debug && console.log(exec);
+    const revisionInfo = await browserFetcher.download(getRevision(process.platform), (transferred, total) => {
+      if (!cfg.debug) {
+        if (!cfg.chromiumBar) {
+          cfg.chromiumBar = multibar.create(total, 0, {
+            filename: "chromium",
+          });
+          return null;
+        }
+        return cfg.chromiumBar.update(transferred, {
+          filename: "chromium",
+        });
+      }
+      return null;
+    });
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
@@ -96,76 +82,80 @@ const main = async () => {
       puppeteer,
       puppeteerOptions: {
         headless: cfg.headless,
-        executablePath: exec,
-        args: existsSync("/.dockerenv") ? ["--no-sandbox"] : [],
+        executablePath: revisionInfo.executablePath,
+        args: existsSync("/.dockerenv")
+          ? ["--no-sandbox", "--disable-features=site-per-process"]
+          : ["--disable-features=site-per-process"],
       },
     });
 
-    cluster.on("taskerror", (err, data) => {
+    cluster.on("taskerror", (err) => {
       console.log(
-        chalk.red(
-          "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
-        )
+        chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
       );
       console.log(chalk.red("Enable debug mode to learn more."));
-      cfg.debug &&
-        console.log(chalk.red("queue task failed"), err.stack || err);
-      if (notifier.update) {
-        notifier.notify();
-      }
+      if (cfg.debug) console.log(chalk.red("queue task failed"), err.stack || err);
     });
 
-    cfg.debug && log.debug({ cluster });
+    const makeBar = (mb) => mb.create(3, 0, { filename: "" });
 
     await cluster.task(({ page, data: { type, value } }) => {
-      if (type === "tukui") return tukuiLogic(page, value, multibar, cfg);
-      if (type === "curse") return curseLogic(page, value, multibar, cfg);
-      if (type === "tsm") return tsmLogic(page, value, multibar, cfg);
-      if (type === "wowinterface") return wowinterfaceLogic(page, value, multibar, cfg);
+      const bar = cfg.debug ? undefined : makeBar(multibar);
+      if (type === "tukui") return tukuiLogic(page, value, bar, cfg);
+      if (type === "curse") return curseLogic(page, value, bar, cfg);
+      if (type === "tsm") return tsmLogic(page, value, bar, cfg);
+      if (type === "wowinterface") return wowinterfaceLogic(page, value, bar, cfg);
+      return null;
     });
 
     if (cfg.addons.curse && Array.isArray(cfg.addons.curse) && cfg.addons.curse.length !== 0) {
       cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
     }
 
-    if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
-      cfg.addons.wowinterface.map((value) => cluster.queue({ type: "wowinterface", value }));
-    }
-
-
-    if (cfg.addons.tukui) {
-      if (cfg.addons.tukui.tukui)
-        cluster.queue({ type: "tukui", value: "tukui" });
-      if (cfg.addons.tukui.elvui)
-        cluster.queue({ type: "tukui", value: "elvui" });
-      if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
-        [...cfg.addons.tukui.addons].map((value) =>
-          cluster.queue({ type: "tukui", value })
-        );
-    }
-    if (cfg.addons.tsm) {
-      ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));
-    }
-
-    cfg.debug && log.debug(cluster.jobQueue);
+    // if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
+    //   cfg.addons.wowinterface.map((value) => cluster.queue({ type: "wowinterface", value }));
+    // }
+    // if (cfg.addons.tukui) {
+    //   if (cfg.addons.tukui.tukui) cluster.queue({ type: "tukui", value: "tukui" });
+    //   if (cfg.addons.tukui.elvui) cluster.queue({ type: "tukui", value: "elvui" });
+    //   if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
+    //     [...cfg.addons.tukui.addons].map((value) => cluster.queue({ type: "tukui", value }));
+    // }
+    // if (cfg.addons.tsm) {
+    //   ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));
+    // }
 
     await cluster.idle();
-    debugState || (await multibar.stop());
+    if (!cfg.debug) await multibar.stop();
+    await cleanTmps(cfg);
     return cluster.close();
   } catch (err) {
     console.log(
-      chalk.red(
-        "Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it."
-      )
+      chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
     );
     console.log(chalk.red("Enable debug mode to learn more."));
     console.log(chalk.red("trace"), err.stack || err);
   } finally {
-    await cleanTmps(cfg);
-    if (notifier.update) {
-      notifier.notify();
+    const [latest] = await getLatestTag();
+    const latestName = latest.name.replace("v", "");
+    console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "finished");
+    if (`${latestName}` !== `${pkg.version}`) {
+      console.log("");
+      console.log(
+        "new version",
+        chalk.bold(chalk.green(latestName)),
+        "detected, you are running",
+        chalk.bold(chalk.red(pkg.version))
+      );
+      console.log("please run", chalk.bold(chalk.green('"npm i -g osjswowau"')), "to update");
+      console.log(
+        "or download the latest binary build from",
+        chalk.bold(chalk.green("https://github.com/jukefr/osjswowau/releases"))
+      );
     }
   }
+
+  return null;
 };
 
 module.exports = main;

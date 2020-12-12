@@ -11,6 +11,14 @@
   "bin": "./osjswowau",
   "scripts": {
     "start": "./osjswowau",
+    "build:linux64": "nexe -t linux-x64-12.9.1 -o dist/osjswowau-linux64 index.js",
+    "build:linux86": "nexe -t linux-x86-12.9.1 -o dist/osjswowau-linux86 index.js",
+    "build:windows64": "nexe -t windows-x64-12.9.1 -o dist/osjswowau-windows64 index.js",
+    "build:windows86": "nexe -t windows-x86-12.9.1 -o dist/osjswowau-windows86 index.js",
+    "build:mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
+    "build": "npm run build:linux64 && npm run build:linux86 && npm run build:windows64 && npm run build:windows86 && npm run build:mac64 ",
+    "lint": "prettier -w ./*.js",
+    "release": "release-it",
     "bump:patch": "npm version patch --force && npm publish",
     "bump:minor": "npm version minor --force && npm publish",
     "bump:major": "npm version major --force && npm publish"
@@ -26,16 +34,64 @@
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",
     "conf": "^7.1.2",
-    "download-chromium": "^2.2.1",
     "glob": "^7.1.6",
     "glob-promise": "^3.4.0",
     "md5-file": "^5.0.0",
     "moment": "^2.29.1",
-    "puppeteer": "npm:puppeteer-core@^5.5.0",
     "puppeteer-cluster": "^0.22.0",
+    "puppeteer-core": "^5.5.0",
     "puppeteer-extra": "^3.1.15",
     "puppeteer-extra-plugin-stealth": "^2.6.5",
-    "unzipper": "^0.10.11",
-    "update-notifier": "^5.0.1"
+    "unzipper": "^0.10.11"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/puppeteer-extra-plugin-stealth/**/*.*"
+    ]
+  },
+  "resolutions": {
+    "clone-deep": "4.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.15.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "nexe": "^3.3.7",
+    "prettier": "^2.2.1",
+    "release-it": "^14.2.2"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true,
+      "assets": [
+        "dist/osjswowau*"
+      ]
+    },
+    "npm": {
+      "publish": true
+    }
+  },
+  "prettier": {
+    "printWidth": 120
+  },
+  "eslintConfig": {
+    "rules": {
+      "no-console": "off",
+      "no-await-in-loop": "off",
+      "no-underscore-dangle": "off",
+      "no-restricted-syntax": "off"
+    },
+    "extends": [
+      "airbnb-base",
+      "prettier"
+    ],
+    "env": {
+      "node": true,
+      "es6": true
+    }
   }
 }

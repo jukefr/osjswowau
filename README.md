@@ -5,11 +5,13 @@
 - it's also **cross-platform** (windows/linux/macos/docker)
 - supports **concurrent** threads (configurable, defaults to 5)
 - emulates a real user session so no rate limiting (hopefully)
+- full binary packages available on the [github releases](https://github.com/jukefr/osjswowau/releases)
 
 ![demo gif](https://i.imgur.com/Xsu2Jz0.gif)
 
-## requirements
-- node.js lts or newer
+## choices
+- prebuilt binaries over on [github releases](https://github.com/jukefr/osjswowau/releases) (click n' go)
+- **OR** node.js lts or newer
 
 ## supported addon sources
 - **curse addons** (latest, md5 checked)
@@ -83,3 +85,4 @@ on linux just run it in the same wine container with the same prefix and everyth
 
 ## todo
 - [ ] classic/retail toggle (currently only retail)
+- [ ] self made update with https://api.github.com/repos/jukefr/osjswowau/tags

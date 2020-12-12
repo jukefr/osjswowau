@@ -2,89 +2,76 @@ const { existsSync, createReadStream } = require("fs");
 const moment = require("moment");
 const md5File = require("md5-file");
 const unzipper = require("unzipper");
-const { log, delay } = require("./_utils");
+const glob = require("glob-promise");
+const { delay, deleteFile } = require("./_utils");
 
-const curseLogic = async (page, name, multibar, cfg) => {
-  let bar;
-
-  cfg.debug || (bar = multibar.create(3, 0, { filename: name }));
-  const wait = async (f, m) => {
+const curseLogic = async (page, name, bar, cfg) => {
+  const wait = async (m) => {
     const start = moment();
     while (moment().diff(start, "ms") < cfg.timeout) {
-      if (existsSync(f)) {
-        const md5 = await md5File(f);
+      const [fname] = await glob(`${cfg.tmp}-${name}/*.zip`);
+      if (existsSync(fname)) {
+        const md5 = await md5File(fname);
         if (md5 === m) {
-          return true;
+          return fname;
         }
       }
-      cfg.debug && log.debug(name, "waiting", cfg.polling, "ms");
       await delay(cfg.polling);
     }
+    return null;
   };
 
-  cfg.debug || bar.update(1, { filename: name });
+  if (bar) bar.update(1, { filename: name });
+
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
-    downloadPath: cfg.tmp,
+    downloadPath: `${cfg.tmp}-${name}`,
   });
-  await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`);
 
-  await delay(cfg.delay);
+  await page.goto(`https://www.curseforge.com/wow/addons/${name}/files`, {
+    waitUntil: "networkidle2",
+  });
+  const frames = page.frames();
+  for (const frame of frames) {
+    const maybeOptions = await frame.$("button[title='Options']");
+    if (maybeOptions) await maybeOptions.click();
+    if (maybeOptions) {
+      await delay(1000);
+      const newFrames = page.frames();
+      for (const newFrame of newFrames) {
+        const maybeReject = await newFrame.$("button[title='Reject All']");
+        if (maybeReject) await maybeReject.click();
+      }
+    }
+  }
 
-  const fileList = await page.$$eval(".listing tbody tr", (list) =>
-    list.map(
-      (x) => x.querySelector("td:nth-child(2) > a:nth-child(1)").innerText
-    )
-  );
-  cfg.debug && log.debug({ fileList });
+  const fileListNodes = await page.$$(".listing tbody tr");
+  for (let i = 0; i < fileListNodes.length; i += 1) {
+    const el = fileListNodes[i].asElement();
+    const elNode = await el.$("td:nth-child(2) > a:nth-child(1)");
+    const text = await (await elNode.getProperty("innerText")).jsonValue();
+    if (!text.includes("classic") && !text.includes("Classic")) {
+      await el.click("td:nth-child(2) > a:nth-child(1)");
+      break;
+    }
+  }
 
-  const index = fileList.reduceRight(
-    (a, c, i) => (c.includes("classic") || c.includes("Classic") ? a : i),
-    false
-  );
-  cfg.debug && log.debug({ index });
-
-  const d2 = await Promise.all([
-    page.$eval(
-      `.listing > tbody:nth-child(2) > tr:nth-child(${
-        index + 1
-      }) > td:nth-child(2) > a:nth-child(1)`,
-      (x) => x.click()
-    ),
-    page.waitForNavigation(),
-  ]);
-  cfg.debug && log.debug({ d2 });
-
-  const filepath = await page.$eval(
-    "div.flex-row:nth-child(1) > span:nth-child(2)",
-    (x) => x.innerText
-  );
-  const md5 = await page.$eval(
-    "div.flex:nth-child(7) > span:nth-child(2)",
-    (x) => x.innerText
-  );
-  cfg.debug && log.debug({ filepath, md5 });
+  const filepathNode = await page.$("div.flex-row:nth-child(1) > span:nth-child(2)");
+  const filepath = await (await filepathNode.getProperty("innerText")).jsonValue();
+  const md5Node = await page.$("div.flex:nth-child(7) > span:nth-child(2)");
+  const md5 = await (await md5Node.getProperty("innerText")).jsonValue();
 
   await Promise.all([
-    page.$eval(
-        "article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)",
-        (x) => x.click()
-    ),
+    page.click("article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)"),
     page.waitForNavigation(),
   ]);
 
-  await Promise.all([
-    page.$eval(
-      "p.text-sm > a:nth-child(1)",
-      (x) => x.click()
-    ),
-    wait(`${cfg.tmp}/${filepath}`, md5),
-  ]);
+  const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), wait(md5)]);
 
-  cfg.debug || bar.update(2, { filename: filepath });
+  if (bar) bar.update(2, { filename: filepath });
 
   await new Promise((resolve, reject) =>
-    createReadStream(`${cfg.tmp}/${filepath}`)
+    createReadStream(filename)
       .on("close", (err) => (err ? reject(err) : resolve()))
       .on("error", (err) => (err ? reject(err) : resolve()))
       .pipe(unzipper.Extract({ path: cfg.addonPath }))
@@ -92,7 +79,8 @@ const curseLogic = async (page, name, multibar, cfg) => {
       .on("error", (err) => (err ? reject(err) : resolve()))
   );
 
-  cfg.debug || bar.update(3, { filename: filepath });
+  if (bar) bar.update(3, { filename: filepath });
+  await deleteFile(filename);
   return page.close();
 };
 

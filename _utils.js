@@ -1,25 +1,47 @@
 const chalk = require("chalk");
-const { rmdir } = require("fs").promises;
+const { rmdir, unlink } = require("fs").promises;
 const glob = require("glob-promise");
 const { inspect } = require("util");
+const https = require("https");
+
+const deleteFile = (path) => unlink(path);
+
+const getLatestTag = async () =>
+  new Promise((resolve, reject) =>
+    https
+      .get(
+        "https://api.github.com/repos/jukefr/osjswowau/tags",
+        {
+          headers: { "User-Agent": "Mozilla/5.0" },
+        },
+        (resp) => {
+          let data = "";
+
+          resp.on("data", (chunk) => {
+            data += chunk;
+          });
+
+          resp.on("end", () => resolve(JSON.parse(data)));
+        }
+      )
+      .on("error", (err) => reject(err))
+  );
 
 const migrations = {
   "2.2.0": (store) => {
     const curse = store.get("addons.curse");
     if (curse) {
       const removeTSM = curse.filter((i) => {
-        const includes = [
-          "tradeskillmaster_apphelper",
-          "tradeskill-master",
-        ].includes(i);
+        const includes = ["tradeskillmaster_apphelper", "tradeskill-master"].includes(i);
         if (!includes) {
           return i;
-        } else {
-          store.set("addons.tsm", includes);
         }
+        store.set("addons.tsm", includes);
+        return false;
       });
       return store.set("addons.curse", removeTSM);
     }
+    return null;
   },
   "2.2.2": (store) => {
     const addonPath = store.get("realpath");
@@ -105,50 +127,48 @@ const schema = {
       wowinterface: {
         type: "array",
         items: { type: "string", default: "24608-Hekili" },
-        default: []
-      }
+        default: [],
+      },
     },
     default: {},
   },
 };
 
 const cleanTmps = async (cfg) => {
-  const tmps = await glob(`${cfg.tmp}\*`);
+  const tmps = await glob(`${cfg.tmp}*`);
   const queue = tmps.map((t) => rmdir(t, { recursive: true }));
   return Promise.all(queue);
 };
-
-const firstStart = (config) => {
-  if (config.get("fresh")) {
-    log.info("First run or configuration updated.");
-    log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
-    (process.platform === "win32" || process.platform === "win64") &&
-      log.info(
-        `Make sure to use double backslashes ${chalk.yellow(
-          "\\\\"
-        )} to escape the ${chalk.yellow("addonPath")} (AddOns folder) variable.`
-      );
-    (process.platform === "win32" || process.platform === "win64") &&
-      log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
-    log.info();
-    log.info(
-      "hint: if your configuration keeps getting reset you are probably making syntax errors"
-    );
-    config.set("fresh", false);
-    process.exit(1);
-  }
-};
-
-const delay = (d) =>
-  new Promise(function (resolve) {
-    setTimeout(resolve, d);
-  });
 
 const log = {
   error: (...msg) => console.log(chalk.red(...msg)),
   info: (...msg) => console.log(chalk.green(...msg)),
   debug: (...msg) => console.log(chalk.blue(inspect(...msg))),
 };
+
+const firstStart = (config) => {
+  if (config.get("fresh")) {
+    log.info("First run or configuration updated.");
+    log.info(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
+    if (process.platform === "win32" || process.platform === "win64")
+      log.info(
+        `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
+          "addonPath"
+        )} (AddOns folder) variable.`
+      );
+    if (process.platform === "win32" || process.platform === "win64")
+      log.info(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
+    log.info();
+    log.info("hint: if your configuration keeps getting reset you are probably making syntax errors");
+    config.set("fresh", false);
+    process.exit(1);
+  }
+};
+
+const delay = (d) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, d);
+  });
 
 module.exports = {
   firstStart,
@@ -157,4 +177,6 @@ module.exports = {
   log,
   cleanTmps,
   migrations,
+  getLatestTag,
+  deleteFile,
 };
