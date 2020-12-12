@@ -118,18 +118,18 @@ const main = async () => {
       cfg.addons.curse.map((value) => cluster.queue({ type: "curse", value }));
     }
 
-    // if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
-    //   cfg.addons.wowinterface.map((value) => cluster.queue({ type: "wowinterface", value }));
-    // }
-    // if (cfg.addons.tukui) {
-    //   if (cfg.addons.tukui.tukui) cluster.queue({ type: "tukui", value: "tukui" });
-    //   if (cfg.addons.tukui.elvui) cluster.queue({ type: "tukui", value: "elvui" });
-    //   if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
-    //     [...cfg.addons.tukui.addons].map((value) => cluster.queue({ type: "tukui", value }));
-    // }
-    // if (cfg.addons.tsm) {
-    //   ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));
-    // }
+    if (cfg.addons.wowinterface && Array.isArray(cfg.addons.wowinterface) && cfg.addons.wowinterface.length !== 0) {
+      cfg.addons.wowinterface.map((value) => cluster.queue({ type: "wowinterface", value }));
+    }
+    if (cfg.addons.tukui) {
+      if (cfg.addons.tukui.tukui) cluster.queue({ type: "tukui", value: "tukui" });
+      if (cfg.addons.tukui.elvui) cluster.queue({ type: "tukui", value: "elvui" });
+      if (cfg.addons.tukui.addons && Array.isArray(cfg.addons.tukui.addons) && cfg.addons.tukui.addons.length !== 0)
+        [...cfg.addons.tukui.addons].map((value) => cluster.queue({ type: "tukui", value }));
+    }
+    if (cfg.addons.tsm) {
+      ["helper", "tsm"].map((value) => cluster.queue({ type: "tsm", value }));
+    }
 
     await cluster.idle();
     if (!cfg.debug) await multibar.stop();
