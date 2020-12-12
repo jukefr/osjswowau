@@ -32,7 +32,7 @@ const main = async () => {
     });
     config.delete("errored");
     debug = debug || config.get("debug");
-    const tmp = join(dirname(config.path), "tmp")
+    const tmp = join(dirname(config.path), "tmp");
     if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
     if (debug) console.log(process.execArgv, process.argv);
 
@@ -56,7 +56,7 @@ const main = async () => {
       path: join(dirname(config.path), `chromium-${revision}`),
     });
 
-    let chromiumBar
+    let chromiumBar;
     const revisionInfo = await browserFetcher.download(revision, (transferred, total) => {
       if (!debug) {
         if (!chromiumBar) {
@@ -76,11 +76,11 @@ const main = async () => {
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
-      maxConcurrency: config.get('concurrency'),
-      timeout: config.get('timeout'),
+      maxConcurrency: config.get("concurrency"),
+      timeout: config.get("timeout"),
       puppeteer,
       puppeteerOptions: {
-        headless: config.get('headless'),
+        headless: config.get("headless"),
         executablePath: revisionInfo.executablePath,
         args: existsSync("/.dockerenv")
           ? ["--no-sandbox", "--disable-features=site-per-process"]
@@ -104,17 +104,17 @@ const main = async () => {
 
     const queue = [];
 
-    const curse = config.get('addons.curse')
+    const curse = config.get("addons.curse");
     if (curse && Array.isArray(curse) && curse.length !== 0) {
       curse.map((value) => queue.push({ type: "curse", value }));
     }
 
-    const wowinterface = config.get('addons.curse')
+    const wowinterface = config.get("addons.curse");
     if (wowinterface && Array.isArray(wowinterface) && wowinterface.length !== 0) {
       wowinterface.map((value) => queue.push({ type: "wowinterface", value }));
     }
 
-    const tukui = config.get('addons.tukui')
+    const tukui = config.get("addons.tukui");
     if (tukui) {
       if (tukui.tukui) queue.push({ type: "tukui", value: "tukui" });
       if (tukui.elvui) queue.push({ type: "tukui", value: "elvui" });
@@ -122,7 +122,7 @@ const main = async () => {
         [...tukui.addons].map((value) => queue.push({ type: "tukui", value }));
     }
 
-    const tsm = config.get('addons.tsm')
+    const tsm = config.get("addons.tsm");
     if (tsm) {
       ["helper", "tsm"].map((value) => queue.push({ type: "tsm", value }));
     }
