@@ -15,25 +15,30 @@ class BadOsError extends CausalError {}
 
 class TooFastError extends CausalError {}
 
+const windowsPathWarn = () => {
+  if (process.platform === "win32" || process.platform === "win64")
+    console.log(
+      `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
+        "addonPath"
+      )} (AddOns folder) variable.`
+    );
+  if (process.platform === "win32" || process.platform === "win64")
+    console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
+}
+
 module.exports = {
   FreshStartError,
   WaitTimeoutError,
   BadOsError,
   TooFastError,
   messages: {
-    freshStart: (err, debug, config) => {
+    freshStart: (err, debug) => {
       console.log("");
-      console.log("Fresh run or old configuration migrated.");
-      if (config) console.log(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
-      if (process.platform === "win32" || process.platform === "win64")
-        console.log(
-          `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
-            "addonPath"
-          )} (AddOns folder) variable.`
-        );
-      if (process.platform === "win32" || process.platform === "win64")
-        console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
-      if (err) console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
+      console.log(chalk.bold("Fresh run or old configuration migrated."));
+      if (err.message) console.log(`Please edit ${chalk.yellow(err.message)} to match your needs.`);
+      console.log("");
+      windowsPathWarn()
+      console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug && err) console.log(chalk.red("cause"), err.cause || err);
     },
     timeout: (err, debug) => {
@@ -59,14 +64,9 @@ module.exports = {
     configSyntax: (err, debug) => {
       console.log("");
       console.log(chalk.red("Your configuration file may have han an incorrect syntax. Please check it carefully."));
-      if (process.platform === "win32" || process.platform === "win64")
-        console.log(
-          `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
-            "addonPath"
-          )} (AddOns folder) variable.`
-        );
-      if (process.platform === "win32" || process.platform === "win64")
-        console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
+      console.log(chalk.red(`JSON can be strict and only allows double quotes ${chalk.bold('"')} and no trailing commas ${chalk.bold(',')}.`));
+      console.log("");
+      windowsPathWarn()
       console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug) console.log(chalk.red("cause"), err.stack || err);
     },
