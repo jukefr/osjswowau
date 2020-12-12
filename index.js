@@ -6,26 +6,39 @@ const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const { firstStart, cleanTmps, schema, migrations, getLatestTag } = require("./_utils");
+const { firstStart, cleanTmps, schema, migrations, endLogic, errorLogicWrapper, getLatestTag} = require("./_utils");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
 const pkg = require("./package.json");
 
+const debug = process.env.DEBUG || false
+if (debug) console.log(chalk.bold(chalk.yellow("debug mode active")));
+
 console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "starting");
+
+let config = {}
+let latest
 
 puppeteer.use(StealthPlugin());
 
 const main = async () => {
   try {
-    const config = new Conf({
+    config = new Conf({
       projectName: pkg.name,
       projectVersion: pkg.version,
       clearInvalidConfig: false,
       projectSuffix: "",
       schema,
       migrations,
+    });
+    config.delete('errored')
+
+    latest = await getLatestTag();
+
+    process.on('unhandledRejection',  err => {
+      errorLogicWrapper(err, config, latest)
     });
 
     const multibar = new cliProgress.MultiBar(
@@ -38,20 +51,13 @@ const main = async () => {
       cliProgress.Presets.legacy
     );
 
+
     firstStart(config);
 
     const cfg = {
       ...config.store,
       tmp: join(dirname(config.path), "tmp"),
     };
-
-    process.on("unhandledRejection", (reason) => {
-      console.log(
-        chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
-      );
-      console.log(chalk.red("Enable debug mode to learn more."));
-      if (cfg.debug) console.log("unhandled rejection", reason.stack || reason);
-    });
 
     // TODO: find an automatic way to do this....
     const getRevision = (p) => {
@@ -68,7 +74,7 @@ const main = async () => {
     });
 
     const revisionInfo = await browserFetcher.download(revision, (transferred, total) => {
-      if (!cfg.debug) {
+      if (!debug) {
         if (!cfg.chromiumBar) {
           cfg.chromiumBar = multibar.create(total, 0, {
             filename: `downloading ${chalk.green(`chromium-${revision}`)} `,
@@ -97,18 +103,18 @@ const main = async () => {
       },
     });
 
-    cluster.on("taskerror", (err) => {
-      console.log(
-        chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
-      );
-      console.log(chalk.red("Enable debug mode to learn more."));
-      if (cfg.debug) console.log(chalk.red("queue task failed"), err.stack || err);
+    cluster.on("taskerror", (err, data) => {
+      if (debug) console.log(chalk.red('task data'), data)
+      errorLogicWrapper(err, config, latest)
     });
 
     const makeBar = (mb) => mb.create(3, 0, { filename: "" });
 
-    await cluster.task(({ page, data: { type, value } }) => {
-      const bar = cfg.debug ? undefined : makeBar(multibar);
+    await cluster.task(async ({ page, data: { type, value } }) => {
+      await page.setDefaultNavigationTimeout(config.get('timeout'));
+      await page.setDefaultTimeout(config.get('timeout'));
+      if (debug) console.log('queuing task', chalk.yellow(value, type))
+      const bar = debug ? undefined : makeBar(multibar);
       if (type === "tukui") return tukuiLogic(page, value, bar, cfg);
       if (type === "curse") return curseLogic(page, value, bar, cfg);
       if (type === "tsm") return tsmLogic(page, value, bar, cfg);
@@ -134,34 +140,13 @@ const main = async () => {
     }
 
     await cluster.idle();
-    if (!cfg.debug) await multibar.stop();
+    if (!debug) await multibar.stop();
     await cleanTmps(cfg);
     return cluster.close();
   } catch (err) {
-    console.log(chalk.red("Something went wrong. Usually a re-run of the command should work."));
-    console.log(chalk.red("Otherwise enable debug mode to learn more."));
-    if (err instanceof SyntaxError) {
-      console.log(chalk.red("Your configuration file probably has an incorrect syntax."));
-    }
-    console.log(chalk.red("trace"), err.stack || err);
+    errorLogicWrapper(err, config, latest)
   } finally {
-    const [latest] = await getLatestTag();
-    const latestName = latest.name.replace("v", "");
-    console.log(chalk.bold(chalk.green("osjswowau")), "version", chalk.bold(pkg.version), "finished");
-    if (`${latestName}` !== `${pkg.version}`) {
-      console.log("");
-      console.log(
-        "new version",
-        chalk.bold(chalk.green(latestName)),
-        "detected, you are running",
-        chalk.bold(chalk.red(pkg.version))
-      );
-      console.log("please run", chalk.bold(chalk.green('"npm i -g osjswowau"')), "to update");
-      console.log(
-        "or download the latest binary build from",
-        chalk.bold(chalk.green("https://github.com/jukefr/osjswowau/releases"))
-      );
-    }
+    await endLogic()
   }
 
   return null;

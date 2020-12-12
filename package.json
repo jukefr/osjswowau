@@ -89,7 +89,8 @@
       "no-console": "off",
       "no-await-in-loop": "off",
       "no-underscore-dangle": "off",
-      "no-restricted-syntax": "off"
+      "no-restricted-syntax": "off",
+      "max-classes-per-file": "off"
     },
     "extends": [
       "airbnb-base",

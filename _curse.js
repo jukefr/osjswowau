@@ -4,7 +4,7 @@ const unzipper = require("unzipper");
 const glob = require("glob-promise");
 const { basename } = require("path");
 const chalk = require("chalk");
-const { delay, deleteFile } = require("./_utils");
+const { delay, deleteFile, WaitTimeoutError } = require("./_utils");
 
 const curseLogic = async (page, name, bar, cfg) => {
   const wait = async (m) => {
@@ -19,7 +19,7 @@ const curseLogic = async (page, name, bar, cfg) => {
       }
       await delay(cfg.polling);
     }
-    return null;
+    throw new WaitTimeoutError();
   };
 
   if (bar) bar.update(1, { filename: `downloading ${chalk.green(name)}` });
@@ -71,11 +71,10 @@ const curseLogic = async (page, name, bar, cfg) => {
 
   await new Promise((resolve, reject) =>
     createReadStream(filename)
-      .on("close", (err) => (err ? reject(err) : resolve()))
-      .on("error", (err) => (err ? reject(err) : resolve()))
+      .on("error", (err) => reject(err))
       .pipe(unzipper.Extract({ path: cfg.addonPath }))
       .on("close", (err) => (err ? reject(err) : resolve()))
-      .on("error", (err) => (err ? reject(err) : resolve()))
+      .on("error", (err) => reject(err))
   );
 
   if (bar) bar.update(3, { filename: `deleting ${chalk.green(basename(filename))}` });
