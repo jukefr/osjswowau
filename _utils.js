@@ -243,7 +243,7 @@ const endLogic = async (config) => {
       );
     }
   }
-  if (process.__nexe && config && config.store && !("waitForKey" in config.store)) {
+  if (!config && process.__nexe) {
     await waitToContinue();
   }
   if (config && config.get("waitForKey")) {
