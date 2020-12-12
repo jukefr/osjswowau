@@ -6,16 +6,7 @@ const { getLatestVersion } = require("./__utils");
 
 const handleFreshStart = (config) => {
   if (config.get("fresh")) {
-    console.log("First run or configuration updated.");
-    console.log(`Please edit ${chalk.yellow(config.path)} to match your needs.`);
-    if (process.platform === "win32" || process.platform === "win64")
-      console.log(
-        `Make sure to use double backslashes ${chalk.yellow("\\\\")} to escape the ${chalk.yellow(
-          "addonPath"
-        )} (AddOns folder) variable.`
-      );
-    if (process.platform === "win32" || process.platform === "win64")
-      console.log(`ie. ${chalk.yellow('"C:\\\\Program Files\\\\..."')}`);
+    messages.freshStart(undefined, false, config)
     config.set("fresh", false);
     throw new FreshStartError();
   }
