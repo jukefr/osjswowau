@@ -252,13 +252,13 @@ const endLogic = async (config) => {
   }
   if (process.__nexe && config && config.store && !("waitForKey" in config.store)) {
     await waitToContinue();
-    console.log('debug1')
+    console.log("debug1");
   }
-  if (config  && config.get("waitForKey")) {
+  if (config && config.get("waitForKey")) {
     await waitToContinue();
-    console.log('debug1')
+    console.log("debug1");
   }
-  console.log('debug1')
+  console.log("debug1");
 };
 
 const errorLogicWrapper = async (err, config, debug) => {
