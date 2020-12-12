@@ -240,7 +240,8 @@ const endLogic = async () => {
       );
     }
   }
-  if (process.__nexe) { // TODO: might change be careful
+  if (process.__nexe) {
+    // TODO: might change be careful
     await waitToContinue();
   }
 };
