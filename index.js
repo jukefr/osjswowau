@@ -137,9 +137,12 @@ const main = async () => {
     return cluster.close();
   } catch (err) {
     console.log(
-      chalk.red("Something went terribly wrong. Usually its a timeout and a simple re-run of the command fixes it.")
+      chalk.red("Something went wrong. Usually a re-run of the command should work.")
     );
-    console.log(chalk.red("Enable debug mode to learn more."));
+    console.log(chalk.red("Otherwise enable debug mode to learn more."));
+    if (err instanceof SyntaxError) {
+      console.log(chalk.red("Your configuration file probably has an incorrect syntax."));
+    }
     console.log(chalk.red("trace"), err.stack || err);
   } finally {
     const [latest] = await getLatestTag();

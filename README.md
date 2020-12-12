@@ -89,3 +89,4 @@ on linux just run it in the same wine container with the same prefix and everyth
 ## todo
 - [ ] classic/retail toggle (currently only retail)
 - [ ] bring back debugger
+- [ ] wayy wore error handling
