@@ -65,7 +65,7 @@ const schema = {
     },
     default: {},
   },
-}
+};
 
 const migrations = {
   "2.2.0": (store) => {
@@ -104,19 +104,20 @@ const migrations = {
       store.delete("addons.elvui");
     }
   },
-}
+};
 
-const getConf = (testing) => new Conf({
+const getConf = (testing) =>
+  new Conf({
     projectName: pkg.name,
     projectVersion: pkg.version,
     clearInvalidConfig: false,
-    projectSuffix: testing ? 'testing' : "",
+    projectSuffix: testing ? "testing" : "",
     schema,
     migrations,
-  })
+  });
 
 module.exports = {
   getConf,
   schema,
-  migrations
+  migrations,
 };

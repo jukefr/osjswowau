@@ -28,7 +28,7 @@ const waitFile = async (config, f, m, tmp) => {
   const start = Date.now();
   let size;
 
-  while (Date.now() - start < config.get("timeout")) {
+  while (Date.now() - start < config.get("timeout") * 0.67) {
     const [fname] = await glob(`${tmp}-${m}/*.zip`);
     if (existsSync(fname)) {
       if (size && size !== 0 && size === statSync(fname).size) return fname;

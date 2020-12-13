@@ -5,7 +5,6 @@ const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const asyncPool = require( "tiny-async-pool");
 const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
 const { getConf } = require("./__conf");
 const { tukuiLogic } = require("./_tukui");
@@ -21,12 +20,12 @@ let debug = process.env.DEBUG || false;
 
 let config = {};
 
-const main = async (testing) => {
+const main = async (testing, exit) => {
   if (!testing) console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
 
   try {
-    config = getConf(testing)
-    console.log(config.path)
+    config = getConf(testing);
+    console.log(config.path);
     config.delete("errored");
     debug = debug || config.get("debug");
     const tmp = join(dirname(config.path), "tmp");
@@ -99,10 +98,10 @@ const main = async (testing) => {
     }
 
     try {
-      await asyncPool(config.get('concurrency'), queue, (v) => cluster.execute(v));
+      await Promise.all(queue.map((v) => cluster.execute(v)));
     } catch (err) {
       await cluster.close();
-      await handleError(err, config, debug, testing);
+      await handleError(err, config, debug, testing, exit);
     } finally {
       await cluster.idle();
       await cluster.close();
@@ -113,7 +112,9 @@ const main = async (testing) => {
 
     return cluster.close();
   } catch (err) {
-    await handleError(err, config, debug, testing);
+    await handleError(err, config, debug, testing, exit);
+    if (testing) throw err;
+    if (exit) process.exit(1);
   } finally {
     await handleCleanup(config);
     if (!module.parent) process.exit(0);
@@ -122,13 +123,7 @@ const main = async (testing) => {
 };
 
 if (!module.parent) {
-  main(process.argv[2]);
+  main(process.argv[2], true);
 } else {
   module.exports = main;
 }
-
-
-
-
-
-

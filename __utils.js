@@ -3,16 +3,17 @@ const { createReadStream, unlinkSync } = require("fs");
 const https = require("https");
 const unzipper = require("unzipper");
 const { join, dirname } = require("path");
-const rimraf = require('rimraf')
+const rimraf = require("rimraf");
 const { BadOsError } = require("./__errors");
 
 const createBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
 
 const deleteFile = (path) => unlinkSync(path);
 
-const deleteFolder = (folder) => new Promise((resolve, reject) => {
-  rimraf(folder, (er) => er ? reject(er) : resolve())
-})
+const deleteFolder = (folder) =>
+  new Promise((resolve, reject) => {
+    rimraf(folder, (er) => (er ? reject(er) : resolve()));
+  });
 
 // TODO: find an automatic way to do this....
 const getChromiumRevision = (p) => {

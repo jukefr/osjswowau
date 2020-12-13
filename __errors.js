@@ -45,6 +45,7 @@ module.exports = {
       console.log("");
       console.log(chalk.red(`A timeout was reached.`));
       console.log(chalk.red(`Try launching the command again or increasing ${chalk.bold("timeout")} in your config.`));
+      console.log(chalk.red(`Trying different ${chalk.bold("delay")} settings can also help.`));
       console.log(chalk.italic(chalk.bold(chalk.red(err.message))));
       if (debug) console.log(chalk.red("cause"), err.cause || err);
     },

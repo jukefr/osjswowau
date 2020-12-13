@@ -3,16 +3,14 @@ const chalk = require("chalk");
 const { deleteFile, extractFile } = require("./__utils");
 const { waitFile } = require("./__wait");
 
-const wowinterfaceLogic = async (config, page, name = "tukui", bar, tmp) => {
+const wowinterfaceLogic = async (config, page, name, bar, tmp) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
   });
   switch (name) {
     default:
-      await page.goto(`https://www.wowinterface.com/downloads/download${name}`, {
-        waitUntil: "networkidle2",
-      });
+      await page.goto(`https://www.wowinterface.com/downloads/download${name}`);
   }
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
   const filename = await waitFile(config, null, name, tmp);

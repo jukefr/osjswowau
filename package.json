@@ -20,7 +20,7 @@
     "build": "concurrently \"npm:build-*\"",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
-    "test": "ava",
+    "test": "ava --verbose --timeout=300s",
     "release": "dotenv release-it -- --ci"
   },
   "keywords": [
@@ -43,7 +43,6 @@
     "puppeteer-extra": "^3.1.15",
     "puppeteer-extra-plugin-stealth": "^2.6.5",
     "rimraf": "^3.0.2",
-    "tiny-async-pool": "^1.2.0",
     "unzipper": "^0.10.11"
   },
   "resolutions": {
@@ -58,7 +57,6 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^7.0.0",
     "eslint-plugin-import": "^2.22.1",
-    "execa": "^5.0.0",
     "nexe": "^3.3.7",
     "prettier": "^2.2.1",
     "release-it": "^14.2.2"

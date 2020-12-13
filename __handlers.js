@@ -13,6 +13,8 @@ const handleFreshStart = (config) => {
 
 const defaultErrorLogic = (err, debug) => {
   if (err.message && err.message.includes("Timeout hit:")) return messages.timeout(err, debug);
+  if (err.message && err.message.includes("timeout")) return messages.timeout(err, debug);
+  if (err.message && err.message.includes("Timeout")) return messages.timeout(err, debug);
   if (err.message && err.message.includes("Node is either not visible or not an HTMLElement"))
     return messages.tooFast(err, debug);
   return messages.default(err, debug);
@@ -71,11 +73,11 @@ const handleCleanup = async (config) => {
   return null;
 };
 
-const handleError = async (err, config, debug, testing) => {
+const handleError = async (err, config, debug, testing, exit) => {
   errorLogic(err, debug);
   await handleCleanup(config);
-  if (testing) throw err
-  if (!module.parent) process.exit(1);
+  if (testing) throw err;
+  if (exit) process.exit(1);
 };
 
 module.exports = {
