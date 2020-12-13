@@ -113,7 +113,6 @@
     ]
   },
   "nyc": {
-    "check-coverage": true,
     "all": true,
     "reporter": ["text-summary"]
   }
