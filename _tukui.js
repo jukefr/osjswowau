@@ -29,7 +29,7 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
     case "tukui":
     case "elvui":
       await page.waitForSelector("#download > div > div > a");
-      await page.click("#download > div > div > a")
+      await page.click("#download > div > div > a");
       break;
     default:
       await page.waitForSelector("div.col-md-3:nth-child(3) > a:nth-child(1)");
