@@ -1,12 +1,13 @@
 const {dirname, join} = require('path')
 const {readdirSync} = require('fs')
 const test = require('ava')
-const main = require('./index') // TODO: test exports also
+const main = require('./index')
 const {getConf} = require('./__conf')
-const {deleteFolder} = require('./__utils')
+const {deleteFolder, getChromium} = require('./__utils')
 const pkg = require('./package.json')
 const {promisify} = require('util')
 const execFile = promisify(require('child_process').execFile)
+const {FreshStartError} = require('./__errors')
 
 const conf = getConf(true)
 const confDir = dirname(conf.path)
@@ -40,6 +41,7 @@ const testVars = {
     'Details_TinyThreat',
     'Details_Vanguard',
     'ElvUI',
+    'ElvUI_FCT',
     'ElvUI_OptionsUI',
     'ElvUI_Redtuzk',
     'ElvUI_SLE',
@@ -179,6 +181,25 @@ const testConfig = {
 }
 
 
+test.serial('reset 0', async t => {
+  await deleteFolder(`${confDir}/**/*`)
+  t.pass();
+});
+
+test.serial('set oldconfig 0', t => {
+  conf.set(oldConfig)
+  t.pass();
+});
+
+test.serial('throws on fresh config 0', async t => {
+  const error = await t.throwsAsync( () => main(true), {instanceOf: FreshStartError});
+  t.is(error.message, conf.path);
+});
+
+test.serial('migrated config matches expected 0', async t => {
+  t.is(JSON.stringify(conf.get()), JSON.stringify(expectedOutput));
+});
+
 
 test.serial('reset 1', async t => {
   await deleteFolder(`${confDir}/**/*`)
@@ -225,7 +246,7 @@ test.serial('can do the real deal', async t => {
 
 });
 
-test.serial('the addon folder count makes sense now', async t => {
+test.serial('the addon folder count makes sense',  t => {
   const getDirectories =  source =>
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
@@ -235,7 +256,30 @@ test.serial('the addon folder count makes sense now', async t => {
   t.is(JSON.stringify(getDirectories(testVars.addonPath)), JSON.stringify(testVars.finalTestResults));
 });
 
-// check that some addons were actually extracted
+test.serial('check chromium version ',  t => {
+  const getDirectories =  source =>
+    readdirSync(source, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name)
 
+  t.is(getDirectories(dirname(conf.path)), [
+      'chromium-' + getChromium(process.platform),
+      'testingAddonPath',
+    ]
+  );
+});
 
-// check that integrated cleanup works
+// test.serial('check that we cleanup after ourselves',  t => {
+//   const getDirectories =  source =>
+//     readdirSync(source, { withFileTypes: true })
+//       .filter(dirent => dirent.isDirectory())
+//       .map(dirent => dirent.name)
+//
+//
+//   const test = getDirectories(dirname(conf.path))
+//   t.is(test.length, [
+//       'chromium-' + getChromium(process.platform),
+//       'testingAddonPath',
+//     ]
+//   );
+// });

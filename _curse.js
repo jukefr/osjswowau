@@ -1,6 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { deleteFile, extractFile } = require("./__utils");
+const { extractFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
 const curseLogic = async (config, page, name, bar, tmp) => {
@@ -47,7 +47,7 @@ const curseLogic = async (config, page, name, bar, tmp) => {
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await deleteFile(filename);
+  // await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
   return page.close();
 };

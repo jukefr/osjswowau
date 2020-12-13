@@ -108,7 +108,7 @@ const main = async (testing, exit) => {
     }
 
     if (!debug) await multibar.stop();
-    await deleteTmpDirs(config);
+    await deleteTmpDirs(tmp);
 
     return cluster.close();
   } catch (err) {

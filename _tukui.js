@@ -1,6 +1,6 @@
 const chalk = require("chalk");
 const { basename } = require("path");
-const { deleteFile, extractFile } = require("./__utils");
+const { extractFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
 const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
@@ -40,7 +40,7 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await deleteFile(filename);
+  // await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
   return page.close();
 };
