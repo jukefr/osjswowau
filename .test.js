@@ -12,10 +12,10 @@ const conf = getConf(true)
 const confDir = dirname(conf.path)
 
 const testVars = {
-  concurrency: 5,
+  concurrency: 1,
   headless: false,
-  debug: false,
-  addonPath: join(conf.path, 'testing'),
+  debug: true,
+  addonPath: join(confDir, 'testingAddonPath'),
   finalTestResults: [
     'AAP-Core',
     'AAP-EasternKingdoms',
@@ -67,7 +67,7 @@ const testVars = {
 
 const oldConfig = { // to test migrations
   "realpath": testVars.addonPath,
-  "timeout": 30000,
+  "timeout": 60000,
   "polling": 1000,
   "waitAfterNavig": 2000,
   "tmp": "./tmp",
@@ -95,7 +95,7 @@ const oldConfig = { // to test migrations
 }
 
 const expectedOutput = {
-  "timeout": 30000,
+  "timeout": 60000,
   "polling": 1000,
   "tmp": "./tmp",
   "debug": testVars.debug,
@@ -135,7 +135,7 @@ const expectedOutput = {
 }
 
 const testConfig = {
-  "timeout": 30000,
+  "timeout": 60000,
   "polling": 500,
   "tmp": "./tmp",
   "debug": testVars.debug,
@@ -169,7 +169,7 @@ const testConfig = {
   },
   "fresh": false,
   "addonPath": testVars.addonPath,
-  "delay": 1000,
+  "delay": 5000,
   "waitForKey": false
 }
 
@@ -187,12 +187,13 @@ test.serial('set oldconfig', t => {
 
 test.serial('throws on fresh config', async t => {
   try {
-    const {stdout} = await execFile('node', ['index.js','testing']);
-    t.true(stdout.includes("Brand new installation or old configuration migrated"))
+    const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
+    t.log(stdout)
   } catch (error) {
-    t.log(error);
-    t.fail()
+    t.true(error.includes("Brand new installation or old configuration migrated"))
+    t.pass()
   }
+    t.fail()
 });
 
 test.serial('migrated config matches expected', async t => {
@@ -215,24 +216,25 @@ test.serial('migrated testconfig matches expected', async t => {
 
 test.serial('can do the real deal', async t => {
   try {
-    const {stdout} = await execFile('node', ['index.js','testing']);
+    const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
+    // t.log(stdout)
+    t.pass()
   } catch (error) {
     t.log(error);
     t.fail()
   }
-  const getDirectories =  source =>
-     readdirSync(source, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name)
-  const test =  getDirectories(testVars.addonPath)
-  t.log(test)
-  t.log(testVars.finalTestResults)
-  t.pass()
+
 });
 
 test.serial('the addon folder count makes sense now', async t => {
+  const getDirectories =  source =>
+    readdirSync(source, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name)
 
-  // t.deepEqual(, testVars.finalTestResults)
+
+
+  t.deepEqual(getDirectories(testVars.addonPath), testVars.finalTestResults)
 });
 
 // check that some addons were actually extracted

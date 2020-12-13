@@ -28,9 +28,11 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
   switch (name) {
     case "tukui":
     case "elvui":
-      await page.click("#download > div > div > a");
+      await page.waitForSelector("#download > div > div > a");
+      await page.click("#download > div > div > a")
       break;
     default:
+      await page.waitForSelector("div.col-md-3:nth-child(3) > a:nth-child(1)");
       await page.click("div.col-md-3:nth-child(3) > a:nth-child(1)");
   }
   if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
