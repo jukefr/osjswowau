@@ -256,7 +256,18 @@ test.serial('the addon folder count makes sense',  t => {
   t.is(JSON.stringify(getDirectories(testVars.addonPath)), JSON.stringify(testVars.finalTestResults));
 });
 
-test.serial('check chromium version ',  t => {
+test.serial('check that we cleanup after ourselves',  t => {
+  const getDirectories =  source =>
+    readdirSync(source, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name)
+
+
+  t.is(getDirectories(dirname(conf.path)).length, 2);
+});
+
+
+test.serial('check remaining chromium version ',  t => {
   const getDirectories =  source =>
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
@@ -269,17 +280,3 @@ test.serial('check chromium version ',  t => {
   );
 });
 
-// test.serial('check that we cleanup after ourselves',  t => {
-//   const getDirectories =  source =>
-//     readdirSync(source, { withFileTypes: true })
-//       .filter(dirent => dirent.isDirectory())
-//       .map(dirent => dirent.name)
-//
-//
-//   const test = getDirectories(dirname(conf.path))
-//   t.is(test.length, [
-//       'chromium-' + getChromium(process.platform),
-//       'testingAddonPath',
-//     ]
-//   );
-// });

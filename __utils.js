@@ -81,6 +81,7 @@ const extractFile = (config, filename) =>
   );
 
 module.exports = {
+  getChromiumRevision,
   getChromium,
   getLatestVersion,
   deleteTmpDirs,
