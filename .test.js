@@ -181,60 +181,60 @@ const testConfig = {
 }
 
 
-test.serial('reset 0', async t => {
+test.serial('0 reset', async t => {
   await deleteFolder(`${confDir}/**/*`)
   t.pass();
 });
 
-test.serial('set oldconfig 0', t => {
+test.serial('1 set oldconfig', t => {
   conf.set(oldConfig)
   t.pass();
 });
 
-test.serial('throws on fresh config 0', async t => {
+test.serial('2 throws on fresh config (module.exports)', async t => {
   const error = await t.throwsAsync( () => main(true), {instanceOf: FreshStartError});
   t.is(error.message, conf.path);
 });
 
-test.serial('migrated config matches expected 0', async t => {
+test.serial('3 migrated config matches expected', async t => {
   t.is(JSON.stringify(conf.get()), JSON.stringify(expectedOutput));
 });
 
 
-test.serial('reset 1', async t => {
+test.serial('4 reset', async t => {
   await deleteFolder(`${confDir}/**/*`)
   t.pass();
 });
 
-test.serial('set oldconfig', t => {
+test.serial('5 set oldconfig', t => {
   conf.set(oldConfig)
   t.pass();
 });
 
-test.serial('throws on fresh config', async t => {
+test.serial('6 throws on fresh config', async t => {
     const {stdout} = await execFile('node', ['index.js', 'testing'], {shell: true})
     if (stdout && stdout.includes("Brand new installation or old configuration migrated.")) t.pass()
 });
 
-test.serial('migrated config matches expected', async t => {
+test.serial('7 migrated config matches expected', async t => {
   t.is(JSON.stringify(conf.get()), JSON.stringify(expectedOutput));
 });
 
-test.serial('reset 2', async t => {
+test.serial('8 reset', async t => {
   await deleteFolder(`${confDir}/**/*`)
   t.pass();
 });
 
-test.serial('set testconfig', t => {
+test.serial('9 set testconfig', t => {
   conf.set(testConfig)
   t.pass();
 });
 
-test.serial('migrated testconfig matches expected', async t => {
+test.serial('10 migrated testconfig matches expected', async t => {
   t.is(JSON.stringify(conf.get()), JSON.stringify(testConfig));
 });
 
-test.serial('can do the real deal', async t => {
+test.serial('11 can do the real deal', async t => {
   try {
     const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
     // t.log(stdout)
@@ -246,7 +246,7 @@ test.serial('can do the real deal', async t => {
 
 });
 
-test.serial('the addon folder count makes sense',  t => {
+test.serial('12 the addon folder count makes sense',  t => {
   const getDirectories =  source =>
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
@@ -256,7 +256,7 @@ test.serial('the addon folder count makes sense',  t => {
   t.is(JSON.stringify(getDirectories(testVars.addonPath)), JSON.stringify(testVars.finalTestResults));
 });
 
-test.serial('check that we cleanup after ourselves',  t => {
+test.serial('13 check that we cleanup after ourselves',  t => {
   const getDirectories =  source =>
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
@@ -267,13 +267,13 @@ test.serial('check that we cleanup after ourselves',  t => {
 });
 
 
-test.serial('check remaining chromium version ',  t => {
+test.serial('14 check remaining chromium version ',  t => {
   const getDirectories =  source =>
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
 
-  t.is(getDirectories(dirname(conf.path)), [
+  t.deepEqual(getDirectories(dirname(conf.path)), [
       'chromium-' + getChromiumRevision(process.platform),
       'testingAddonPath',
     ]
