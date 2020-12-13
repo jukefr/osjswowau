@@ -66,7 +66,7 @@
       "commitMessage": "chore: release v${version}"
     },
     "hooks": {
-      "before:init": [],
+      "before:init": ["npm run test"],
       "after:bump": [
         "npm run lint",
         "npm run changelog",
