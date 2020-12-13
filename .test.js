@@ -211,7 +211,7 @@ test.serial('5 set oldconfig', t => {
   t.pass();
 });
 
-test.serial('6 throws on fresh config', async t => {
+test.serial('6 throws on fresh config (child-process)', async t => {
     const {stdout} = await execFile('node', ['index.js', 'testing'], {shell: true})
     if (stdout && stdout.includes("Brand new installation or old configuration migrated.")) t.pass()
 });

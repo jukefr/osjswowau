@@ -20,7 +20,7 @@
     "build": "concurrently \"npm:build-*\"",
     "lint": "prettier -w ./*.js",
     "changelog": "auto-changelog -p",
-    "test": "ava --verbose --timeout=300s",
+    "test": "nyc ava --verbose --timeout=300s",
     "release": "dotenv release-it -- --ci"
   },
   "keywords": [
@@ -58,6 +58,7 @@
     "eslint-config-prettier": "^7.0.0",
     "eslint-plugin-import": "^2.22.1",
     "nexe": "^3.3.7",
+    "nyc": "^15.1.0",
     "prettier": "^2.2.1",
     "release-it": "^14.2.2"
   },
@@ -110,5 +111,10 @@
     "files": [
       ".test.js"
     ]
+  },
+  "nyc": {
+    "check-coverage": true,
+    "all": true,
+    "reporter": ["text-summary"]
   }
 }
