@@ -3,7 +3,7 @@ const {readdirSync} = require('fs')
 const test = require('ava')
 const main = require('./index')
 const {getConf} = require('./__conf')
-const {deleteFolder, getChromium} = require('./__utils')
+const {deleteFolder, getChromiumRevision} = require('./__utils')
 const pkg = require('./package.json')
 const {promisify} = require('util')
 const execFile = promisify(require('child_process').execFile)
@@ -263,7 +263,7 @@ test.serial('check chromium version ',  t => {
       .map(dirent => dirent.name)
 
   t.is(getDirectories(dirname(conf.path)), [
-      'chromium-' + getChromium(process.platform),
+      'chromium-' + getChromiumRevision(process.platform),
       'testingAddonPath',
     ]
   );
