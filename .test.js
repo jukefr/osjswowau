@@ -11,11 +11,16 @@ const execFile = promisify(require('child_process').execFile)
 const conf = getConf(true)
 const confDir = dirname(conf.path)
 
+const headless = true
+
 const testVars = {
-  concurrency: 1,
-  headless: false,
+  concurrency: headless ? 3 : 1,
+  headless,
   debug: true,
   addonPath: join(confDir, 'testingAddonPath'),
+  timeout: headless ? 30000 : 60000,
+  polling: 500,
+  delay: 2500,
   finalTestResults: [
     'AAP-Core',
     'AAP-EasternKingdoms',
@@ -67,9 +72,9 @@ const testVars = {
 
 const oldConfig = { // to test migrations
   "realpath": testVars.addonPath,
-  "timeout": 60000,
-  "polling": 1000,
-  "waitAfterNavig": 2000,
+  "timeout": testVars.timeout,
+  "polling": testVars.polling,
+  "waitAfterNavig": testVars.delay,
   "tmp": "./tmp",
   "debug": testVars.debug,
   "concurrency": testVars.concurrency,
@@ -95,8 +100,8 @@ const oldConfig = { // to test migrations
 }
 
 const expectedOutput = {
-  "timeout": 60000,
-  "polling": 1000,
+  "timeout": testVars.timeout,
+  "polling": testVars.polling,
   "tmp": "./tmp",
   "debug": testVars.debug,
   "concurrency": testVars.concurrency,
@@ -126,7 +131,7 @@ const expectedOutput = {
   "fresh": false,
   "addonPath": testVars.addonPath,
   "waitForKey": false,
-  "delay": 2000,
+  "delay": testVars.delay,
   "__internal__": {
     "migrations": {
       "version": pkg.version
@@ -135,8 +140,8 @@ const expectedOutput = {
 }
 
 const testConfig = {
-  "timeout": 60000,
-  "polling": 500,
+  "timeout": testVars.timeout,
+  "polling": testVars.polling,
   "tmp": "./tmp",
   "debug": testVars.debug,
   "concurrency": testVars.concurrency,
@@ -169,7 +174,7 @@ const testConfig = {
   },
   "fresh": false,
   "addonPath": testVars.addonPath,
-  "delay": 5000,
+  "delay": testVars.delay,
   "waitForKey": false
 }
 
@@ -186,14 +191,8 @@ test.serial('set oldconfig', t => {
 });
 
 test.serial('throws on fresh config', async t => {
-  try {
-    const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
-    t.log(stdout)
-  } catch (error) {
-    t.true(error.includes("Brand new installation or old configuration migrated"))
-    t.pass()
-  }
-    t.fail()
+    const {stdout} = await execFile('node', ['index.js', 'testing'], {shell: true})
+    if (stdout && stdout.includes("Brand new installation or old configuration migrated.")) t.pass()
 });
 
 test.serial('migrated config matches expected', async t => {
@@ -233,8 +232,7 @@ test.serial('the addon folder count makes sense now', async t => {
       .map(dirent => dirent.name)
 
 
-
-  t.deepEqual(getDirectories(testVars.addonPath), testVars.finalTestResults)
+  t.is(JSON.stringify(getDirectories(testVars.addonPath)), JSON.stringify(testVars.finalTestResults));
 });
 
 // check that some addons were actually extracted
