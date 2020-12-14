@@ -38,6 +38,7 @@
     "cli-progress": "^3.8.2",
     "conf": "^7.1.2",
     "globby": "^11.0.1",
+    "puppeteer": "npm:puppeteer-cluster",
     "puppeteer-cluster": "^0.22.0",
     "puppeteer-core": "^5.5.0",
     "puppeteer-extra": "^3.1.15",
