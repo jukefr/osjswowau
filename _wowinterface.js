@@ -1,6 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { extractFile } = require("./__utils");
+const { extractFile, deleteFile } = require("./__utils");
 const { waitFile } = require("./__wait");
 
 const wowinterfaceLogic = async (config, page, name, bar, tmp) => {
@@ -17,7 +17,7 @@ const wowinterfaceLogic = async (config, page, name, bar, tmp) => {
   if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
-  // await deleteFile(filename);
+  await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
   return page.close();
 };
