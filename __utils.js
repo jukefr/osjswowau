@@ -18,7 +18,7 @@ const deleteFolder = (folder) =>
 // TODO: find an automatic way to do this....
 const getChromiumRevision = (p) => {
   if (p === "linux") return "812859";
-  if (p === "mac") return "812851";
+  if (p === "darwin") return "812851";
   if (p === "win64" || p === "win32") return "812899";
   throw new BadOsError();
 };

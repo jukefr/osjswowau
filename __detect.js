@@ -22,12 +22,12 @@ const listWindowsDrives = () =>
 
 const detectAddonsPath = async (dir, ignores = []) => {
   if (wasDetected) return detectedAddonPath;
-  return readdir(resolve(dir), { withFileTypes: true }).then((dirents) =>
+  return readdir(dir, { withFileTypes: true }).then((dirents) =>
     Promise.all(
       dirents.reduce((ac, dirent) => {
         if (wasDetected) return detectedAddonPath;
         const res = resolve(dir, dirent.name);
-        if (res.includes("Interface/AddOns")) {
+        if (res.includes(join("Interface", "AddOns"))) {
           ac.push(res);
           detectedAddonPath = res;
           wasDetected = true;
@@ -53,26 +53,31 @@ const detectAddonsPath = async (dir, ignores = []) => {
 const detectLogic = async () => {
   // windows
   if (process.platform.includes("win")) {
-    listWindowsDrives();
+    // start with homedir
+    await detectAddonsPath(homedir());
+    // then drives in general
+    const drives = await listWindowsDrives();
+    await Promise.all(drives.map((drive) => detectAddonsPath(`${drive}\\`)));
   }
-  // test drive exists
-  // if drive exsits test in program files
-  // if program files test wow...
-  // C:\Program Files (x86)\World of Warcraft\Interface\AddOns or
-  // C:\Program Files \World of Warcraft\Interface\AddOns
 
   // macos
-  // test drive exists
-  /// Applications/World of Warcraft/
+  if (process.platform === "darwin") {
+    // start with homedir
+    await detectAddonsPath(homedir());
+    // then applications
+    await detectAddonsPath("/Applications/World of Warcraft/");
+    // then drive
+    await detectAddonsPath("/");
+  }
 
   // linux
   if (process.platform === "linux") {
     // start with homedir
-    // await detectAddonsPath(homedir())
+    await detectAddonsPath(homedir());
     // then current drive
-    // await detectAddonsPath('/', ['/run', '/proc', '/sys', '/media'])
+    await detectAddonsPath("/", ["/run", "/proc", "/sys", "/media"]);
     // then other drives
-    // await detectAddonsPath('/', [ '/proc', '/sys'])
+    await detectAddonsPath("/", ["/proc", "/sys"]);
   }
 
   console.log(chalk.green("detected addon path"), detectedAddonPath);
