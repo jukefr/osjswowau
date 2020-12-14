@@ -3,7 +3,6 @@ const {homedir} = require('os')
 const {cd, find} = require('shelljs')
 const {exec} = require('child_process');
 const {join} = require('path')
-const drivelist = require('drivelist');
 const { resolve } = require('path');
 const { readdir } = require('fs').promises;
 const chalk = require('chalk')
@@ -42,7 +41,6 @@ const detectAddonsPath = async (dir, ignores = [])  => {
 
 
 const detectLogic = async () => {
-  const drives = await drivelist.list();
 
   // windows
   // test drive exists
@@ -57,25 +55,12 @@ const detectLogic = async () => {
 
   // linux
   if (process.platform === 'linux') {
-    const drivePaths = drives.reduce((ac, drive) => {
-      if (drive.mountpoints.find(mountpoint => mountpoint.path === '/boot')) {
-        return ac
-      }
-      if (drive.mountpoints.find(mountpoint => mountpoint.path.includes('SWAP') )) {
-        return ac
-      }
-      if (drive.mountpoints[0] && drive.mountpoints[0].path) {
-        ac.push(drive.mountpoints[0].path)
-      }
-      return ac
-    }, [])
-
     // start with homedir
     // await detectAddonsPath(homedir())
     // then current drive
-    // await detectAddonsPath('/', ['/run', '/proc', '/sys'])
+    // await detectAddonsPath('/', ['/run', '/proc', '/sys', '/media'])
     // then other drives
-    await Promise.all(drivePaths.map((path) => detectAddonsPath(path)))
+    // await detectAddonsPath('/', [ '/proc', '/sys'])
   }
 
   console.log(chalk.green('detected addon path'), detectedAddonPath)

@@ -34,7 +34,6 @@
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",
     "conf": "^7.1.2",
-    "drivelist": "^9.2.2",
     "glob": "^7.1.6",
     "glob-promise": "^3.4.0",
     "md5-file": "^5.0.0",
