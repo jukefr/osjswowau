@@ -92,10 +92,10 @@ const testConfig = {
     "tsm": true,
     "tukui": {
       "addons": [
-        137,
-        38,
-        107,
-        3
+        "137",
+        "38",
+        "107",
+        "3"
       ],
       "elvui": true,
       "tukui": true
