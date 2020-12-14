@@ -40,7 +40,7 @@ const detectAddonsPath = async (dir, ignores = []) => {
           try {
             accessSync(res, constants.R_OK);
             if (dirent.isDirectory()) {
-              if (ignores.reduce((a, ignore) => !res.startsWith(ignore) && a, true)) {
+              if (ignores.reduce((a, ignore) => !res.includes(ignore) && a, true)) {
                 ac.push(detectAddonsPath(res));
                 return ac;
               }
