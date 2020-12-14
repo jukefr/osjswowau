@@ -53,6 +53,10 @@ const detectAddonsPath = async (dir, ignores = []) => {
   );
 };
 
+const getAddonsList = (addonPath) =>  readdir(addonPath, { withFileTypes: true }).then((dirents) =>dirents.map(dirent => {
+  const addonFullPath = resolve(addonPath, dirent.name);
+}))
+
 const detectLogic = async () => {
   // windows
   if (process.platform.includes("win")) {
