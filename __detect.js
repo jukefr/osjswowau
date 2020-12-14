@@ -17,8 +17,8 @@ const listWindowsDrives = () =>
       .split("\r\r\n")
       .filter((value) => /[A-Za-z]:/.test(value))
       .map((value) => value.trim())
-      .filter(drive => existsSync(`${drive  }\\`))
-      .map(drive => `${drive}\\`)
+      .filter((drive) => existsSync(`${drive}\\`))
+      .map((drive) => `${drive}\\`)
   );
 
 const detectAddonsPath = async (dir, ignores = []) => {
@@ -43,7 +43,9 @@ const detectAddonsPath = async (dir, ignores = []) => {
                 return ac;
               }
             }
-          } catch (err) { return ac }
+          } catch (err) {
+            return ac;
+          }
         }
         return ac;
       }, [])
