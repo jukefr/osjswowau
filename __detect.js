@@ -1,6 +1,5 @@
 const { existsSync, accessSync, constants } = require("fs");
 const { homedir } = require("os");
-const { cd, find } = require("shelljs");
 const { promisify } = require("util");
 const exec = promisify(require("child_process").exec);
 const { join } = require("path");
@@ -42,7 +41,7 @@ const detectAddonsPath = async (dir, ignores = []) => {
                 return ac;
               }
             }
-          } catch (err) {}
+          } catch (err) { return ac }
         }
         return ac;
       }, [])
@@ -65,9 +64,9 @@ const detectLogic = async () => {
     // start with homedir
     await detectAddonsPath(homedir());
     // then applications
-    await detectAddonsPath("/Applications/World of Warcraft/");
+    await detectAddonsPath("/Applications");
     // then drive
-    await detectAddonsPath("/");
+    await detectAddonsPath("/", ["/proc", "/sys", "/dev"]);
   }
 
   // linux
@@ -75,9 +74,9 @@ const detectLogic = async () => {
     // start with homedir
     await detectAddonsPath(homedir());
     // then current drive
-    await detectAddonsPath("/", ["/run", "/proc", "/sys", "/media"]);
+    await detectAddonsPath("/", ["/run", "/proc", "/sys", "/media", "/dev", "/mnt", "/mount"]);
     // then other drives
-    await detectAddonsPath("/", ["/proc", "/sys"]);
+    await detectAddonsPath("/", ["/proc", "/sys", "/dev"]);
   }
 
   console.log(chalk.green("detected addon path"), detectedAddonPath);

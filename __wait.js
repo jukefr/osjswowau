@@ -1,7 +1,7 @@
 const { existsSync, statSync } = require("fs");
-const md5File = require("md5-file");
-const glob = require("glob-promise");
+const glob = require("globby");
 const chalk = require("chalk");
+const { md5File } = require("./__utils");
 const { WaitTimeoutError } = require("./__errors");
 
 const waitFor = (d) =>

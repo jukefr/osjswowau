@@ -1,10 +1,18 @@
 const chalk = require("chalk");
-const { createReadStream, unlinkSync } = require("fs");
+const { createReadStream, unlinkSync, readFileSync } = require("fs");
 const https = require("https");
 const unzipper = require("unzipper");
 const { join, dirname } = require("path");
 const rimraf = require("rimraf");
+const {createHash} = require('crypto')
 const { BadOsError } = require("./__errors");
+
+const md5File = (filepath) => {
+  const buffer = readFileSync(filepath)
+  const sum = createHash('md5');
+  sum.update(buffer);
+  return sum.digest('hex');
+}
 
 const createBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
 
@@ -81,6 +89,7 @@ const extractFile = (config, filename) =>
   );
 
 module.exports = {
+  md5File,
   getChromiumRevision,
   getChromium,
   getLatestVersion,
