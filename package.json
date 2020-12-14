@@ -22,7 +22,9 @@
     "lint": "eslint ./*.js",
     "changelog": "auto-changelog -p",
     "test": "nyc ava --verbose --timeout=300s",
-    "release": "dotenv release-it -- --ci"
+    "release": "dotenv release-it -- --ci",
+    "release:minor": "dotenv release-it -- minor --ci",
+    "release:major": "dotenv release-it -- major --ci"
   },
   "keywords": [
     "wow",
