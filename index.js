@@ -22,7 +22,7 @@ let debug = process.env.DEBUG || false;
 
 let config = {};
 
-const main = async (testing = process.argv[2] || false, exit = process.argv[3] || false) => {
+const main = async (testing = process.argv[2] || false, exit = process.argv[3] || true) => {
   if (!testing) console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
 
   try {
