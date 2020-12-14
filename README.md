@@ -1,4 +1,4 @@
-# 🕹️ osjswowau
+# 💽 osjswowau
 **O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
 - 🔥 **automagically detects addon path and installed addons**
