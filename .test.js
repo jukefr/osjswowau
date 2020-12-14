@@ -167,3 +167,4 @@ test.serial('6 check remaining chromium version ',  t => {
   );
 });
 
+// TODO: test version update notif

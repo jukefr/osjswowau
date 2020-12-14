@@ -190,10 +190,10 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
     // windows
     if (process.platform.includes("win")) {
       // start with homedir
-      await detectAddonsPath(homedir(), ['\\Windows']);
+      await detectAddonsPath(homedir(), ['\\Windows', '\\Temp']);
       // then drives in general
       const drives = await listWindowsDrives();
-      await Promise.all(drives.map((drive) => detectAddonsPath(drive, ['\\Windows'])));
+      await Promise.all(drives.map((drive) => detectAddonsPath(drive, ['\\Windows', '\\Temp'])));
     }
 
     // macos
