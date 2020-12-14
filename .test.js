@@ -5,6 +5,7 @@ const {getConf} = require('./__conf')
 const {deleteFolder, getChromiumRevision} = require('./__utils')
 const {promisify} = require('util')
 const execFile = promisify(require('child_process').execFile)
+const pkg = require('./package.json')
 
 const conf = getConf(true)
 const confDir = dirname(conf.path)
@@ -124,7 +125,7 @@ test.serial('2 migrated testconfig matches expected', async t => {
 test.serial('3 can do the real deal', async t => {
   try {
     const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
-    t.true(stdout.includes())
+    t.true(stdout.includes(`osjswowau v${pkg.version} finished`))
     t.pass()
   } catch (error) {
     t.log(error);
