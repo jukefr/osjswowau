@@ -4,6 +4,7 @@ const cliProgress = require("cli-progress");
 const chalk = require("chalk");
 const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
+const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
 const { getConf } = require("./__conf");
@@ -17,6 +18,7 @@ const pkg = require("./package.json");
 require("events").EventEmitter.defaultMaxListeners = 25;
 
 puppeteer.use(StealthPlugin());
+puppeteer.use(AdblockerPlugin());
 
 let debug = process.env.DEBUG || false;
 
@@ -65,11 +67,11 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
       await page.setDefaultNavigationTimeout(config.get("timeout"));
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
-      const bar = debug ? undefined : createBar(multibar, value);
-      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp, tocs[value]);
-      if (type === "curse") return curseLogic(config, page, value, bar, tmp, tocs[value]);
-      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp, tocs[value]);
-      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp, tocs[value]);
+      const bar = debug ? { update: (...msg) => console.log(...msg) } : createBar(multibar, value);
+      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp, tocs[value], debug, type);
+      if (type === "curse") return curseLogic(config, page, value, bar, tmp, tocs[value], debug, type);
+      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp, tocs.tsm, debug, type);
+      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp, tocs[value], debug, type);
       return null;
     });
 

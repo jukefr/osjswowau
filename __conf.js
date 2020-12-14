@@ -44,7 +44,7 @@ const schema = {
           elvui: { type: "boolean", default: false },
           addons: {
             type: "array",
-            items: { type: "number" },
+            items: { type: "string" },
             default: [],
           },
         },

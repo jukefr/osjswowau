@@ -1,10 +1,10 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const {appendFileSync} = require('fs')
+const { appendFileSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
-const curseLogic = async (config, page, name, bar, tmp, toc) => {
+const curseLogic = async (config, page, name, bar, tmp, toc, debug, type) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -14,6 +14,7 @@ const curseLogic = async (config, page, name, bar, tmp, toc) => {
   });
   await waitFor(config.get("delay"));
 
+  if (debug) console.log("responding to privacy popup if it exists");
   const frames = page.frames();
   for (const frame of frames) {
     const maybeOptions = await frame.$("button[title='Options']");
@@ -28,18 +29,21 @@ const curseLogic = async (config, page, name, bar, tmp, toc) => {
     }
   }
 
-  let version
+  let version;
+  await page.waitForSelector(".listing tbody tr");
   const fileListNodes = await page.$$(".listing tbody tr");
   for (const node of fileListNodes) {
     const el = node.asElement();
     const elNode = await el.$("td:nth-child(2) > a:nth-child(1)");
-    version = await (await elNode.getProperty("innerText")).jsonValue();
-    if (!version.includes("classic") && !version.includes("Classic")){
-      if (toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
-        if (bar) bar.update(4, { filename: `arlready up to date ${chalk.bold(chalk.green(name))}` });
+    version = (await (await elNode.getProperty("innerText")).jsonValue()) || "NOVERSIONWASDETECTED";
+    if (!version.includes("classic") && !version.includes("Classic")) {
+      if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
+        if (bar)
+          bar.update(4, {
+            filename: `arlready up to date ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
+          });
         return page.close();
       }
-      console.log(toc, version);
       await el.click("td:nth-child(2) > a:nth-child(1)");
       break;
     }
@@ -57,9 +61,10 @@ const curseLogic = async (config, page, name, bar, tmp, toc) => {
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
-  if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
-  if (!version.includes(toc.Version) || !toc.Version.includes(version)) {
-    appendFileSync(toc.path, `## Version: ${version}`);
+  if (bar) bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+  if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
+    appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
+    appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);
   }
   return page.close();
 };

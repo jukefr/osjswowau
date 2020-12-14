@@ -42,6 +42,7 @@
     "puppeteer-cluster": "^0.22.0",
     "puppeteer-core": "^5.5.0",
     "puppeteer-extra": "^3.1.15",
+    "puppeteer-extra-plugin-adblocker": "^2.11.9",
     "puppeteer-extra-plugin-stealth": "^2.6.5",
     "rimraf": "^3.0.2",
     "unzipper": "^0.10.11"

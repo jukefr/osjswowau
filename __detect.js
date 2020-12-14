@@ -6,6 +6,7 @@ const { join } = require("path");
 const { resolve, basename } = require("path");
 const { readdir } = require("fs").promises;
 const chalk = require("chalk");
+const { appendFileSync } = require("fs");
 const database = require("./__database");
 require("events").EventEmitter.defaultMaxListeners = 25;
 
@@ -58,12 +59,12 @@ const detectAddonsPath = async (dir, ignores = []) => {
 const tocParser = (filePath) => {
   let toc = {};
   const contents = readFileSync(filePath, "utf-8");
-  for (const line of contents.split("\n")) {
-    if (line.startsWith("## ") && !line.endsWith("##\r")) {
+  for (const line of contents.split(/\r?\n/)) {
+    if (line.startsWith("## ") && !line.endsWith("##")) {
       toc = {
         ...toc,
         path: filePath,
-        [line.split(":")[0].replace("## ", "")]: line.split(":")[1].trim().replace("\r", ""),
+        [line.split(":")[0].replace("## ", "")]: line.split(":")[1].trim().replace(/\r?\n/, ""),
       };
     }
   }
@@ -82,10 +83,12 @@ const getAddonTocs = async (addonPath) => {
           .map((entry) => entry.name)
           .filter((entry) => entry.endsWith(".toc"))
           .map((entry) => resolve(addonFullPath, entry));
-        tocs = {
-          ...tocs,
-          ...tocParser(toc),
-        };
+        if (toc) {
+          tocs = {
+            ...tocs,
+            ...tocParser(toc),
+          };
+        }
       }
     }
     return tocs;
@@ -131,21 +134,20 @@ const updateConf = (config, addons) => {
           config.set("addons.tsm", true);
           break;
         case "tukui":
-          switch (addons[addon].tukui) {
-            case -2:
+          switch (addons[addon][Object.keys(addons[addon])[0]]) {
+            case "-2":
               config.set("addons.tukui.elvui", true);
               break;
-            case -1:
+            case "-1":
               config.set("addons.tukui.tukui", true);
               break;
             default:
               config.set("addons.tukui.addons", [
-                ...new Set([...config.get("addons.tukui.addons"), addons[addon].tukui]),
+                ...new Set([...config.get("addons.tukui.addons"), `${addons[addon].tukui}`]),
               ]);
           }
           break;
         default:
-          // console.log(addon, addons[addon], Object.keys(addons[addon])[0])
           throw new Error("This should not happen... I made a code mistake somewhere probably...");
       }
     }
@@ -238,18 +240,20 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
     },
   });
 
-  await cluster.task(async ({ page, data: { type, value } }) => {
+  await cluster.task(async ({ page, data: { type, value, toc } }) => {
     await page.setDefaultNavigationTimeout(config.get("timeout"));
     await page.setDefaultTimeout(config.get("timeout"));
     if (debug) console.log("getting addon name task", chalk.bold(chalk.yellow(value, type)));
     if (type === "curse") {
       const name = await getCurseName(page, value);
+      appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${[name]}\r\n`);
       return {
         [type]: name,
       };
     }
     if (type === "wowinterface") {
       const name = await getWowinterfaceName(page, value);
+      appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${[name]}\r\n`);
       return {
         [type]: name,
       };
@@ -262,24 +266,57 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   const newTocs = {};
   for (const toc in tocs) {
     if (Object.prototype.hasOwnProperty.call(tocs, toc)) {
-      if (tocs[toc]["X-Curse-Project-ID"]) {
-        const name = await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
+      if (tocs[toc].OSJSWOWAU) {
+        const [type, ...rest] = tocs[toc].OSJSWOWAU.split("-");
+        const name = { [type]: [...rest].join("-") };
+        detectedAddons[toc] = name;
+        newTocs[name[type]] = {
+          ...name,
+          ...tocs[toc],
+        };
+      } else if (tocs[toc]["X-Curse-Project-ID"]) {
+        const name = tocs[toc].OSJSWOWAU
+          ? { curse: tocs[toc].OSJSWOWAU }
+          : await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"], toc: tocs[toc] });
         detectedAddons[toc] = name;
         newTocs[name.curse] = {
           ...name,
           ...tocs[toc],
         };
       } else if (tocs[toc]["X-WoWI-ID"]) {
-        const name = await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
+        const name = tocs[toc].OSJSWOWAU
+          ? { wowinterface: tocs[toc].OSJSWOWAU }
+          : await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"], toc: tocs[toc] });
         detectedAddons[toc] = name;
         newTocs[name.wowinterface] = {
           ...name,
           ...tocs[toc],
         };
       } else if (tocs[toc]["X-Tukui-ProjectID"]) {
-        const name = { tukui: Number(tocs[toc]["X-Tukui-ProjectID"]) };
+        const name = { tukui: tocs[toc]["X-Tukui-ProjectID"] };
         detectedAddons[toc] = name;
-        newTocs[name.tukui] = {
+        switch (name.tukui) {
+          case "-2":
+            newTocs.elvui = {
+              ...name,
+              ...tocs[toc],
+            };
+            break;
+          case "-1":
+            newTocs.tukui = {
+              ...name,
+              ...tocs[toc],
+            };
+            break;
+          default:
+            newTocs[name.tukui] = {
+              ...name,
+              ...tocs[toc],
+            };
+        }
+      } else if (tocs[toc].Title.includes("TradeSkillMaster")) {
+        const name = { tsm: true };
+        newTocs.tsm = {
           ...name,
           ...tocs[toc],
         };
@@ -292,17 +329,16 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
             ...tocs[toc],
           };
         }
-      } else if (debug) console.log(toc, tocs[toc]); // not matched against anything
+      } else if (debug) console.log(toc); // not matched against anything
     }
   }
 
   await cluster.idle();
-  updateConf(config, detectedAddons);
+  updateConf(config, newTocs);
 
-  if (detectedAddons) console.log("The following addons were automatically detected :");
+  if (detectedAddons) console.log("The following addons were detected :");
   if (detectedAddons) Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
-  if (detectedAddons)
-    console.log(chalk.bold("You can still manually edit the config it will also update your additions."));
+  if (detectedAddons) console.log(chalk.bold("You can edit the config to manually track additions."));
   if (detectedAddons) console.log();
 
   await cluster.close();
@@ -311,4 +347,5 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
 
 module.exports = {
   detectLogic,
+  getAddonTocs,
 };
