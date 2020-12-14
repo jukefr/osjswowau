@@ -9,6 +9,7 @@ const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
 const { getConf } = require("./__conf");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
+const { detectLogic } = require("./__detect");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
 const { handleFreshStart, handleError, handleCleanup } = require("./__handlers");
@@ -25,7 +26,6 @@ const main = async (testing, exit) => {
 
   try {
     config = getConf(testing);
-    console.log(config.path);
     config.delete("errored");
     debug = debug || config.get("debug");
     const tmp = join(dirname(config.path), "tmp");
@@ -42,9 +42,9 @@ const main = async (testing, exit) => {
       cliProgress.Presets.legacy
     );
 
-    handleFreshStart(config);
-
     const revisionInfo = await getChromium(config, puppeteer, multibar, debug);
+
+    await detectLogic(config, Cluster, puppeteer, revisionInfo, debug); // detect addons
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
