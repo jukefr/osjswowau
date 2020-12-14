@@ -1,6 +1,7 @@
 # 🕹️ osjswowau
 **O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
+- 🔥 **automatically detects addon path and installed addons**
 - manage a **single configuration file** and always be up to date everywhere
 - it's also **cross-platform** (windows/linux/macos/docker)
 - now **comes with a gui** *(sort of, you can just run the downloaded binary by double clicking it)*
@@ -8,7 +9,7 @@
 - emulates a real user session so no rate limiting (hopefully)
 - full binary packages available on the [github releases](https://github.com/jukefr/osjswowau/releases)
 
-![demo gif](https://i.imgur.com/HXy1ngZ.gif)
+![demo gif](https://i.imgur.com/DTto4rt.gif)
 
 ## addon sources
 - **curse addons** (latest, md5 checked)
@@ -22,7 +23,6 @@ $ osjswowau
 ```
 
 ## installation
-the first time we bootstrap the configuration file and kill the process to give you some time to edit it
 
 ### binary (easiest)
 simply download the binary in the [github releases](https://github.com/jukefr/osjswowau/releases) and open it
@@ -35,7 +35,7 @@ $ npm i -g osjswowau    # to install globally and have it in path with npm
 ```
 
 ## how to configure
-if you have a good connection the default settings (except `addonPath` and `addons`) will probably work fine for you
+if you have a good connection the default settings will probably work fine for you
 
 otherwise, try simply re-running the command a second time before changing the configuration, web pages can be finicky...
 
