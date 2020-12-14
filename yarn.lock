@@ -4535,7 +4535,7 @@ puppeteer-cluster@^0.22.0:
   dependencies:
     debug "^4.1.1"
 
-puppeteer-core@^5.5.0:
+puppeteer-core@^5.5.0, "puppeteer@npm:puppeteer-core":
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/puppeteer-core/-/puppeteer-core-5.5.0.tgz#dfb6266efe5a933cbf1a368d27025a6fd4f5a884"
   integrity sha512-tlA+1n+ziW/Db03hVV+bAecDKse8ihFRXYiEypBe9IlLRvOCzYFG6qrCMBYK34HO/Q/Ecjc+tvkHRAfLVH+NgQ==
@@ -4581,7 +4581,7 @@ puppeteer-extra-plugin@^3.1.7:
     debug "^4.1.1"
     merge-deep "^3.0.1"
 
-puppeteer-extra@^3.1.15, "puppeteer@npm:puppeteer-extra":
+puppeteer-extra@^3.1.15:
   version "3.1.15"
   resolved "https://registry.yarnpkg.com/puppeteer-extra/-/puppeteer-extra-3.1.15.tgz#a2ec4f5fc0bed837cc983a25b7d18c37161233cb"
   integrity sha512-TFKcluoNSYCT3xmZjDcqOkBuxZePbwvaL5mrW5Gvp5c9QsJEei5TYixoenMQaB3QZuRW0Aura4yyjVrJDNlWFA==
