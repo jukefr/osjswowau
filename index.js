@@ -45,7 +45,7 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
 
     const revisionInfo = await getChromium(config, puppeteer, multibar, debug);
 
-    await detectLogic(config, Cluster, puppeteer, revisionInfo, debug, testing); // detect addons
+    const tocs = await detectLogic(config, Cluster, puppeteer, revisionInfo, debug, testing); // detect addons
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,
@@ -66,10 +66,10 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
       const bar = debug ? undefined : createBar(multibar, value);
-      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp);
-      if (type === "curse") return curseLogic(config, page, value, bar, tmp);
-      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp);
-      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp);
+      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp, tocs[value]);
+      if (type === "curse") return curseLogic(config, page, value, bar, tmp, tocs[value]);
+      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp, tocs[value]);
+      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp, tocs[value]);
       return null;
     });
 

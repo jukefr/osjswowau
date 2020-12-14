@@ -3,7 +3,8 @@ const { basename } = require("path");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
-const tukuiLogic = async (config, page, name = "tukui", bar, tmp) => {
+const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc) => {
+  console.log(toc);
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,

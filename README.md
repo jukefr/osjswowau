@@ -16,10 +16,10 @@ Download from [Github Releases](https://github.com/jukefr/osjswowau/releases) an
 `npm i -g osjswowau` if you prefer to use Nodejs.
 
 ## 🗃 Addon Sources
-- **[CurseForge addons](#%EF%B8%8F-curseforge-addons---httpswwwcurseforgecomwowaddons)** (latest version, md5 checked)
-- **[WoWInterface addons](#%EF%B8%8F-wowinterface-addons---httpswwwwowinterfacecom)** (latest version, no hashes available)
-- **[Elvui, Tukui and Tukui addons](#%EF%B8%8F-elvui-tukui-and-tukui-addons---httpswwwtukuiorg)** (latest version, no hashes available)
-- **[TradeSkillMaster and TradeSkillMaster_Apphelper](#%EF%B8%8F-tradeskillmaster-and-tradeskillmaster_apphelper---httpswwwtradeskillmastercom)** (latest version, no hashes available)
+- **CurseForge addons** (latest version, md5 checked)
+- **WoWInterface addons** (latest version, no hashes available)
+- **Elvui, Tukui and Tukui addons** (latest version, no hashes available)
+- **TradeSkillMaster and TradeSkillMaster_Apphelper** (latest version, no hashes available)
 
 
 ## 📝 Configuration
@@ -80,3 +80,5 @@ Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswoway`
 
 ## ✅ Future Plans
 - [ ] classic/retail toggle (currently only retail)
+- [ ] add version compare now that we can parse toc
+- [ ] wireshark the tsm client to see how it gets the latest values

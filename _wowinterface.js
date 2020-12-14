@@ -3,7 +3,8 @@ const chalk = require("chalk");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile } = require("./__wait");
 
-const wowinterfaceLogic = async (config, page, name, bar, tmp) => {
+const wowinterfaceLogic = async (config, page, name, bar, tmp, toc) => {
+  console.log(toc);
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,

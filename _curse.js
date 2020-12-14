@@ -1,9 +1,10 @@
 const { basename } = require("path");
 const chalk = require("chalk");
+const {appendFileSync} = require('fs')
 const { extractFile, deleteFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
-const curseLogic = async (config, page, name, bar, tmp) => {
+const curseLogic = async (config, page, name, bar, tmp, toc) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -26,16 +27,24 @@ const curseLogic = async (config, page, name, bar, tmp) => {
       }
     }
   }
+
+  let version
   const fileListNodes = await page.$$(".listing tbody tr");
-  for (let i = 0; i < fileListNodes.length; i += 1) {
-    const el = fileListNodes[i].asElement();
+  for (const node of fileListNodes) {
+    const el = node.asElement();
     const elNode = await el.$("td:nth-child(2) > a:nth-child(1)");
-    const text = await (await elNode.getProperty("innerText")).jsonValue();
-    if (!text.includes("classic") && !text.includes("Classic")) {
+    version = await (await elNode.getProperty("innerText")).jsonValue();
+    if (!version.includes("classic") && !version.includes("Classic")){
+      if (toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
+        if (bar) bar.update(4, { filename: `arlready up to date ${chalk.bold(chalk.green(name))}` });
+        return page.close();
+      }
+      console.log(toc, version);
       await el.click("td:nth-child(2) > a:nth-child(1)");
       break;
     }
   }
+
   const md5Node = await page.$("div.flex:nth-child(7) > span:nth-child(2)");
   const md5 = await (await md5Node.getProperty("innerText")).jsonValue();
   await Promise.all([
@@ -49,6 +58,9 @@ const curseLogic = async (config, page, name, bar, tmp) => {
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) bar.update(4, { filename: `finished ${chalk.bold(chalk.green(basename(filename)))}` });
+  if (!version.includes(toc.Version) || !toc.Version.includes(version)) {
+    appendFileSync(toc.path, `## Version: ${version}`);
+  }
   return page.close();
 };
 

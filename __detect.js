@@ -62,6 +62,7 @@ const tocParser = (filePath) => {
     if (line.startsWith("## ") && !line.endsWith("##\r")) {
       toc = {
         ...toc,
+        path: filePath,
         [line.split(":")[0].replace("## ", "")]: line.split(":")[1].trim().replace("\r", ""),
       };
     }
@@ -190,10 +191,10 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
     // windows
     if (process.platform.includes("win")) {
       // start with homedir
-      await detectAddonsPath(homedir(), ['\\Windows', '\\Temp']);
+      await detectAddonsPath(homedir(), ["\\Windows", "\\Temp"]);
       // then drives in general
       const drives = await listWindowsDrives();
-      await Promise.all(drives.map((drive) => detectAddonsPath(drive, ['\\Windows', '\\Temp'])));
+      await Promise.all(drives.map((drive) => detectAddonsPath(drive, ["\\Windows", "\\Temp"])));
     }
 
     // macos
@@ -258,17 +259,38 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
 
   const tocs = await getAddonTocs(config.get("addonPath"));
   const detectedAddons = {};
+  const newTocs = {};
   for (const toc in tocs) {
     if (Object.prototype.hasOwnProperty.call(tocs, toc)) {
       if (tocs[toc]["X-Curse-Project-ID"]) {
-        detectedAddons[toc] = await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
+        const name = await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
+        detectedAddons[toc] = name;
+        newTocs[name.curse] = {
+          ...name,
+          ...tocs[toc],
+        };
       } else if (tocs[toc]["X-WoWI-ID"]) {
-        detectedAddons[toc] = await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
+        const name = await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
+        detectedAddons[toc] = name;
+        newTocs[name.wowinterface] = {
+          ...name,
+          ...tocs[toc],
+        };
       } else if (tocs[toc]["X-Tukui-ProjectID"]) {
-        detectedAddons[toc] = { tukui: Number(tocs[toc]["X-Tukui-ProjectID"]) };
+        const name = { tukui: Number(tocs[toc]["X-Tukui-ProjectID"]) };
+        detectedAddons[toc] = name;
+        newTocs[name.tukui] = {
+          ...name,
+          ...tocs[toc],
+        };
       } else if (database[toc]) {
         if (isContainedIn(database[toc].matches, tocs[toc])) {
-          detectedAddons[toc] = database[toc].gives;
+          const name = database[toc].gives;
+          detectedAddons[toc] = name;
+          newTocs[name[Object.keys(name)[0]]] = {
+            ...name,
+            ...tocs[toc],
+          };
         }
       } else if (debug) console.log(toc, tocs[toc]); // not matched against anything
     }
@@ -277,16 +299,15 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   await cluster.idle();
   updateConf(config, detectedAddons);
 
-  console.log(detectedAddons)
-
   if (detectedAddons) console.log("The following addons were automatically detected :");
   if (detectedAddons) Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
   if (detectedAddons)
     console.log(chalk.bold("You can still manually edit the config it will also update your additions."));
   if (detectedAddons) console.log();
 
-  return cluster.close();
-}
+  await cluster.close();
+  return newTocs;
+};
 
 module.exports = {
   detectLogic,

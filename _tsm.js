@@ -3,7 +3,8 @@ const chalk = require("chalk");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
-const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
+const tsmLogic = async (config, page, name = "tsm", bar, tmp, toc) => {
+  console.log(toc);
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
