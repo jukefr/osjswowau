@@ -1,13 +1,10 @@
 const {dirname, join} = require('path')
 const {readdirSync} = require('fs')
 const test = require('ava')
-const main = require('./index')
 const {getConf} = require('./__conf')
 const {deleteFolder, getChromiumRevision} = require('./__utils')
-const pkg = require('./package.json')
 const {promisify} = require('util')
 const execFile = promisify(require('child_process').execFile)
-const {FreshStartError} = require('./__errors')
 
 const conf = getConf(true)
 const confDir = dirname(conf.path)
@@ -71,76 +68,6 @@ const testVars = {
   ]
 }
 
-
-const oldConfig = { // to test migrations
-  "realpath": testVars.addonPath,
-  "timeout": testVars.timeout,
-  "polling": testVars.polling,
-  "waitAfterNavig": testVars.delay,
-  "tmp": "./tmp",
-  "debug": testVars.debug,
-  "concurrency": testVars.concurrency,
-  "headless": testVars.headless,
-  "addons": {
-    "curse": [
-      "azeroth-auto-pilot",
-      "big-wigs",
-      "details",
-      "little-wigs",
-      "pawn",
-      "plater-nameplates",
-      "tradeskill-master",
-      "weakauras-2"
-    ],
-    "elvui": [
-      137,
-      38,
-      107,
-      3
-    ]
-  }
-}
-
-const expectedOutput = {
-  "timeout": testVars.timeout,
-  "polling": testVars.polling,
-  "tmp": "./tmp",
-  "debug": testVars.debug,
-  "concurrency": testVars.concurrency,
-  "headless": testVars.headless,
-  "addons": {
-    "curse": [
-      "azeroth-auto-pilot",
-      "big-wigs",
-      "details",
-      "little-wigs",
-      "pawn",
-      "plater-nameplates",
-      "weakauras-2"
-    ],
-    "tsm": true,
-    "wowinterface": [],
-    "tukui": {
-      "addons": [
-        137,
-        38,
-        107,
-        3
-      ],
-      "elvui": true
-    }
-  },
-  "fresh": false,
-  "addonPath": testVars.addonPath,
-  "waitForKey": false,
-  "delay": testVars.delay,
-  "__internal__": {
-    "migrations": {
-      "version": pkg.version
-    }
-  }
-}
-
 const testConfig = {
   "timeout": testVars.timeout,
   "polling": testVars.polling,
@@ -197,7 +124,7 @@ test.serial('2 migrated testconfig matches expected', async t => {
 test.serial('3 can do the real deal', async t => {
   try {
     const { stdout } = await execFile('node', ['index.js', 'testing'], {shell: true});
-    // t.log(stdout)
+    t.true(stdout.includes())
     t.pass()
   } catch (error) {
     t.log(error);
@@ -221,7 +148,6 @@ test.serial('5 check that we cleanup after ourselves',  t => {
     readdirSync(source, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
-
 
   t.is(getDirectories(dirname(conf.path)).length, 2);
 });

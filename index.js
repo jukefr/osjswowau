@@ -12,7 +12,7 @@ const { curseLogic } = require("./_curse");
 const { detectLogic } = require("./__detect");
 const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
-const { handleFreshStart, handleError, handleCleanup } = require("./__handlers");
+const { handleError, handleCleanup } = require("./__handlers");
 const pkg = require("./package.json");
 require("events").EventEmitter.defaultMaxListeners = 25;
 
@@ -22,7 +22,7 @@ let debug = process.env.DEBUG || false;
 
 let config = {};
 
-const main = async (testing, exit) => {
+const main = async (testing = process.argv[2] || false, exit = process.argv[3] || false) => {
   if (!testing) console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "starting");
 
   try {
@@ -45,7 +45,7 @@ const main = async (testing, exit) => {
 
     const revisionInfo = await getChromium(config, puppeteer, multibar, debug);
 
-    await detectLogic(config, Cluster, puppeteer, revisionInfo, debug); // detect addons
+    await detectLogic(config, Cluster, puppeteer, revisionInfo, debug, testing); // detect addons
 
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_BROWSER,

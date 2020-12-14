@@ -1,4 +1,5 @@
 const Conf = require("conf");
+const { join, dirname } = require("path");
 const pkg = require("./package.json");
 
 const schema = {
@@ -97,13 +98,10 @@ const migrations = {
       store.delete("addons.elvui");
     }
   },
-  "4.6.21": (store) => {
-    store.delete("addonPath");
-  },
 };
 
-const getConf = (testing) =>
-  new Conf({
+const getConf = (testing) => {
+  const config = new Conf({
     projectName: pkg.name,
     projectVersion: pkg.version,
     clearInvalidConfig: false,
@@ -111,6 +109,9 @@ const getConf = (testing) =>
     schema,
     migrations,
   });
+  if (testing) config.set("addonPath", join(dirname(config.path), "testingAddonPath"));
+  return config;
+};
 
 module.exports = {
   getConf,

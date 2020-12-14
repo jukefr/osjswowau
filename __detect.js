@@ -70,23 +70,26 @@ const tocParser = (filePath) => {
 };
 
 const getAddonTocs = async (addonPath) => {
-  const dirents = await readdir(addonPath, { withFileTypes: true });
-  let tocs = {};
-  for (const dirent of dirents) {
-    if (dirent.isDirectory()) {
-      const addonFullPath = resolve(addonPath, dirent.name);
-      const contents = await readdir(addonFullPath, { withFileTypes: true });
-      const [toc] = contents
-        .map((entry) => entry.name)
-        .filter((entry) => entry.endsWith(".toc"))
-        .map((entry) => resolve(addonFullPath, entry));
-      tocs = {
-        ...tocs,
-        ...tocParser(toc),
-      };
+  if (existsSync(addonPath)) {
+    const dirents = await readdir(addonPath, { withFileTypes: true });
+    let tocs = {};
+    for (const dirent of dirents) {
+      if (dirent.isDirectory()) {
+        const addonFullPath = resolve(addonPath, dirent.name);
+        const contents = await readdir(addonFullPath, { withFileTypes: true });
+        const [toc] = contents
+          .map((entry) => entry.name)
+          .filter((entry) => entry.endsWith(".toc"))
+          .map((entry) => resolve(addonFullPath, entry));
+        tocs = {
+          ...tocs,
+          ...tocParser(toc),
+        };
+      }
     }
+    return tocs;
   }
-  return tocs;
+  return {};
 };
 
 const isContainedIn = (a, b) => {
@@ -101,7 +104,11 @@ const isContainedIn = (a, b) => {
     return i === la;
   }
   if (Object(a) === a) {
-    for (const p in a) if (!(p in b && isContainedIn(a[p], b[p]))) return false;
+    for (const p in a) {
+      if (Object.prototype.hasOwnProperty.call(a, p)) {
+        if (!(p in b && isContainedIn(a[p], b[p]))) return false;
+      }
+    }
     return true;
   }
   return a === b;
@@ -178,7 +185,7 @@ const getCurseName = async (page, id) => {
   return undefined;
 };
 
-const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
+const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, testing) => {
   if (!config.get("addonPath")) {
     // windows
     if (process.platform.includes("win")) {
@@ -208,8 +215,12 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
       // then other drives
       await detectAddonsPath("/", ["/proc", "/sys", "/dev"]);
     }
-    console.log(chalk.green("detected addon path"), detectedAddonPath);
-    config.set("addonPath", detectedAddonPath);
+
+    if (!detectedAddonPath) throw new Error("Could not find your addon path, please set it manually.");
+
+    if (!testing) console.log(chalk.green("detected addon path"), detectedAddonPath);
+    if (!testing) config.set("addonPath", detectedAddonPath);
+    if (testing) detectedAddonPath = config.get("addonPath");
   }
 
   const cluster = await Cluster.launch({
@@ -248,19 +259,19 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
   const tocs = await getAddonTocs(config.get("addonPath"));
   const detectedAddons = {};
   for (const toc in tocs) {
-    if (tocs[toc]["X-Curse-Project-ID"]) {
-      const name = await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
-      detectedAddons[toc] = name;
-    } else if (tocs[toc]["X-WoWI-ID"]) {
-      const name = await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
-      detectedAddons[toc] = name;
-    } else if (tocs[toc]["X-Tukui-ProjectID"]) {
-      detectedAddons[toc] = { tukui: Number(tocs[toc]["X-Tukui-ProjectID"]) };
-    } else if (database[toc]) {
-      if (isContainedIn(database[toc].matches, tocs[toc])) {
-        detectedAddons[toc] = database[toc].gives;
-      }
-    } else if (debug) console.log(toc, tocs[toc]); // not matched against anything
+    if (Object.prototype.hasOwnProperty.call(tocs, toc)) {
+      if (tocs[toc]["X-Curse-Project-ID"]) {
+        detectedAddons[toc] = await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
+      } else if (tocs[toc]["X-WoWI-ID"]) {
+        detectedAddons[toc] = await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
+      } else if (tocs[toc]["X-Tukui-ProjectID"]) {
+        detectedAddons[toc] = { tukui: Number(tocs[toc]["X-Tukui-ProjectID"]) };
+      } else if (database[toc]) {
+        if (isContainedIn(database[toc].matches, tocs[toc])) {
+          detectedAddons[toc] = database[toc].gives;
+        }
+      } else if (debug) console.log(toc, tocs[toc]); // not matched against anything
+    }
   }
 
   await cluster.idle();

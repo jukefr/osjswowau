@@ -4,13 +4,6 @@ const { waitToContinue } = require("./__wait");
 const pkg = require("./package.json");
 const { getLatestVersion } = require("./__utils");
 
-const handleFreshStart = (config) => {
-  if (config.get("fresh")) {
-    config.set("fresh", false);
-    throw new FreshStartError(config.path);
-  }
-};
-
 const defaultErrorLogic = (err, debug) => {
   if (err.message && err.message.includes("Timeout hit:")) return messages.timeout(err, debug);
   if (err.message && err.message.includes("timeout")) return messages.timeout(err, debug);
@@ -81,7 +74,6 @@ const handleError = async (err, config, debug, testing, exit) => {
 };
 
 module.exports = {
-  handleFreshStart,
   handleError,
   handleCleanup,
 };
