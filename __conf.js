@@ -97,6 +97,9 @@ const migrations = {
       store.delete("addons.elvui");
     }
   },
+  "4.6.21": (store) => {
+    store.delete("addonPath");
+  },
 };
 
 const getConf = (testing) =>

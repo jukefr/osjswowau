@@ -3,10 +3,7 @@
 module.exports = {
   Rarity: {
     matches: {
-      Author: "Allara",
       Title: "Rarity",
-      Notes: "Tracks rare drops, including companions and mounts",
-      SavedVariables: "RarityDB",
     },
     gives: {
       curse: "rarity",
@@ -15,8 +12,6 @@ module.exports = {
   WorldQuestsList: {
     matches: {
       Title: "World Quests List",
-      Author: "ykiigor",
-      SavedVariables: "VWQL",
     },
     gives: {
       curse: "world-quests-list",
@@ -25,10 +20,6 @@ module.exports = {
   TradeSkillMaster_AppHelper: {
     matches: {
       Title: "|cff00ff00TradeSkillMaster_AppHelper|r",
-      Notes: "Acts as a connection between the TSM addon and app.",
-      Author: "TSM Team",
-      SavedVariables: "TradeSkillMaster_AppHelperDB",
-      Dependency: "TradeSkillMaster",
     },
     gives: {
       tsm: true,
@@ -37,9 +28,6 @@ module.exports = {
   TradeSkillMaster: {
     matches: {
       Title: "|cff00fe00TradeSkillMaster|r",
-      Notes: "Auction house and gold making addon.",
-      Author: "TradeSkillMaster Team",
-      SavedVariables: "TradeSkillMasterDB, TSMItemInfoDB",
     },
     gives: {
       tsm: true,
@@ -48,9 +36,6 @@ module.exports = {
   Plater: {
     matches: {
       Title: "Plater",
-      Notes: "Nameplate addon designed for advanced users.",
-      SavedVariables: "PlaterDB",
-      SavedVariablesPerCharacter: "PlaterDBChr",
     },
     gives: {
       curse: "plater-nameplates",
@@ -59,20 +44,14 @@ module.exports = {
   Pawn: {
     matches: {
       Title: "Pawn",
-      Notes: "Pawn helps you compare items and find upgrades.",
-      SavedVariables: "PawnCommon",
-      SavedVariablesPerCharacter: "PawnOptions, PawnMrRobotScaleProviderOptions, PawnClassicScaleProviderOptions",
     },
     gives: {
       curse: "pawn",
     },
   },
-
   TheUndermineJournal: {
     matches: {
       Title: "The Undermine Journal",
-      OptionalDeps: "Auctionator, AuctionLite, LibExtraTip",
-      SavedVariablesPerCharacter: "TUJTooltipsHidden, TUJTooltipsSettings",
     },
     gives: {
       curse: "undermine-journal",
@@ -81,10 +60,6 @@ module.exports = {
   ElvUI_SLE: {
     matches: {
       Title: "|cff1784d1ElvUI|r |cff9482c9Shadow & Light|r",
-      Author: "Darth Predator, Repooc",
-      Notes: "Plugin-edit for |cff1784d1ElvUI|r adding additional features.",
-      RequiredDeps: "ElvUI",
-      SavedVariables: "SLE_ArmoryDB",
     },
     gives: {
       tukui: 38,
@@ -92,11 +67,7 @@ module.exports = {
   },
   ElvUI_Redtuzk: {
     matches: {
-      Author: "Redtuzk",
       Title: "|cff1784d1ElvUI|r |cffc41f3bRedtuzk|r",
-      Notes: "Contains profile layouts designed by Redtuzk",
-      RequiredDeps: "ElvUI",
-      "X-Tukui-ProjectID": "107",
     },
     gives: {
       tukui: 107,
@@ -104,10 +75,7 @@ module.exports = {
   },
   ElvUI_FCT: {
     matches: {
-      Author: "Simpy, Lightspark",
       Title: "|cff1784d1ElvUI|r |cFFdd2244Floating Combat Text|r",
-      SavedVariables: "ElvFCT",
-      RequiredDeps: "ElvUI",
     },
     gives: {
       tukui: 137,
@@ -115,12 +83,7 @@ module.exports = {
   },
   ElvUI: {
     matches: {
-      Author: "Elv, Simpy",
       Title: "|cff1784d1ElvUI|r",
-      Notes: "User Interface replacement AddOn for World of Warcraft.",
-      SavedVariables: "ElvDB, ElvPrivateDB",
-      SavedVariablesPerCharacter: "ElvCharacterDB",
-      "X-Tukui-ProjectID": "-2",
     },
     gives: {
       tukui: -2,
@@ -129,9 +92,6 @@ module.exports = {
   Details: {
     matches: {
       Title: "Details! Damage Meter",
-      Notes: "Essential tool to impress that chick in your raid.",
-      SavedVariables: "_detalhes_global",
-      SavedVariablesPerCharacter: "_detalhes_database",
     },
     gives: {
       curse: "details",
@@ -140,8 +100,6 @@ module.exports = {
   AddOnSkins: {
     matches: {
       Title: "|cff16C3F2AddOn|r|cFFFFFFFFSkins|r",
-      Author: "Azilroka, NihilisticPandemonium",
-      SavedVariables: "AddOnSkinsDB, AddOnSkinsDS",
     },
     gives: {
       tukui: 3,
@@ -149,12 +107,154 @@ module.exports = {
   },
   Tukui: {
     matches: {
-      Author: 'Tukz',
-      Title: '|cffff8000Tukui|r',
-      Notes: 'UI of awesomeness!',
+      Title: "|cffff8000Tukui|r",
     },
     gives: {
       tukui: -1,
     },
-  }
+  },
+  RareScanner: {
+    matches: {
+      Title: "RareScanner",
+    },
+    gives: {
+      curse: "rarescanner",
+    },
+  },
+  RaiderIO: {
+    matches: {
+      Title: "Raider.IO Mythic Plus and Raiding",
+    },
+    gives: {
+      curse: "raiderio",
+    },
+  },
+  Bagnon: {
+    matches: {
+      Title: "Bagnon",
+    },
+    gives: {
+      curse: "bagnon",
+    },
+  },
+  TomTom: {
+    matches: {
+      Title: "TomTom",
+    },
+    gives: {
+      curse: "tomtom",
+    },
+  },
+  Simulationcraft: {
+    matches: {
+      Title: "Simulationcraft",
+    },
+    gives: {
+      curse: "simulationcraft",
+    },
+  },
+  Auctionator: {
+    matches: {
+      Title: "Auctionator",
+    },
+    gives: {
+      curse: "auctionator",
+    },
+  },
+  OmniCC: {
+    matches: {
+      Title: "OmniCC",
+    },
+    gives: {
+      curse: "auctionator",
+    },
+  },
+  TomCats: {
+    matches: {
+      Title: "TomCat's Tours",
+    },
+    gives: {
+      curse: "tomcats",
+    },
+  },
+  Recount: {
+    matches: {
+      Title: "Recount",
+    },
+    gives: {
+      curse: "recount",
+    },
+  },
+  MythicDungeonTools: {
+    matches: {
+      Title: "Mythic Dungeon Tools",
+    },
+    gives: {
+      curse: "mythic-dungeon-tools",
+    },
+  },
+  VuhDo: {
+    matches: {
+      Title: "\"VuhDo ['vu",
+    },
+    gives: {
+      wowinterface: "14239-VuhDo",
+    },
+  },
+  Rematch: {
+    matches: {
+      Title: "Rematch",
+    },
+    gives: {
+      wowinterface: "22190-Rematch",
+    },
+  },
+  HealBot: {
+    matches: {
+      Title: "HealBot",
+    },
+    gives: {
+      wowinterface: "6096-HealBotContinued",
+    },
+  },
+  Dominos: {
+    matches: {
+      Title: "Dominos",
+    },
+    gives: {
+      wowinterface: "9085-Dominos",
+    },
+  },
+  PhoenixStyle: {
+    matches: {
+      Title: "Phoenix|cff7fff7fStyle|r   Core",
+    },
+    gives: {
+      wowinterface: "14715-PhoenixStyle",
+    },
+  },
+  ProjectAzilroka: {
+    matches: {
+      Title: "|cFF16C3F2Project|r|cFFFFFFFFAzilroka|r",
+    },
+    gives: {
+      tukui: 79,
+    },
+  },
+  ElvUI_mMediaTag: {
+    matches: {
+      Title: "|cff1784d1ElvUI|r |CFF8E44ADm|r|CFF2ECC71Media|r|CFF3498DBTag|r",
+    },
+    gives: {
+      tukui: 60,
+    },
+  },
+  ElvUI_NutsAndBolts: {
+    matches: {
+      Title: "|cff1784d1ElvUI|r |cff00c0faNuts|r|cffffff00&|r|cff00c0faBolts|r",
+    },
+    gives: {
+      tukui: 9,
+    },
+  },
 };
