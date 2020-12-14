@@ -1,86 +1,74 @@
 # 💽 osjswowau
 **O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
-- 🔥 **automagically detects addon path and installed addons**
-- 💾 manage a **single configuration file** and always be up to date everywhere
-- 💻 it's also **cross-platform** (windows/linux/macos/docker)
-- 🧵 supports **concurrent** threads (configurable, defaults to 5)
-- 🕵️ emulates a **real user session** so no rate limiting (hopefully)
-- 🗄️ full binary packages available on the [github releases](https://github.com/jukefr/osjswowau/releases)
+- ✨ **Automagically detects addon path and installed addons.**
+- 📝 Manage a **single configuration file** and always be up to date everywhere.
+- ♻️ **Cross-platform** support. (windows/linux/macos/docker)
+- 🚀 Supports **concurrent** threads. (configurable, defaults to 5)
+- 🕵️ Emulates a **real user session** so no rate limiting. (hopefully)
+- 📦 Portable builds available on **[github releases](https://github.com/jukefr/osjswowau/releases)**.
 
 ![demo gif](https://i.imgur.com/f9BC08g.gif)
 
-## addon sources
-- **curse addons** (latest, md5 checked)
-- **wowinterface addons** (latest, no hashes available)
-- **tukui** + **elvui** + **tukui addons** (latest, no hashes available)
-- **tsm** + **tsm_apphelper** (latest, no hashes available)
+## 📦 Installation
+Download from [Github Release](https://github.com/jukefr/osjswowau/releases) and run it.
 
-## usage
-```bash
-$ osjswowau
-```
+Or `npm i -g osjswowau` if you want to use Nodejs.
 
-## installation
+## 🗃 Addon Sources
+- **CurseForge addons** (latest version, md5 checked)
+- **WoWInterface addons** (latest version, no hashes available)
+- **Elvui, Tukui and Tukui addons** (latest version, no hashes available)
+- **TradeSkillMaster and TradeSkillMaster_Apphelper** (latest version, no hashes available)
 
-### binary (easiest)
-simply download the binary in the [github releases](https://github.com/jukefr/osjswowau/releases) and open it
 
-### npm
-```bash
-$ npx osjswowau         # to try it without keeping it path with npm
+## 📝 Configuration
+If you have a good connection the default settings should work fine out of the box.
 
-$ npm i -g osjswowau    # to install globally and have it in path with npm
-```
+Usually when encountering an error, a second or third retry should work.
 
-## how to configure
-if you have a good connection the default settings will probably work fine for you
-
-otherwise, try simply re-running the command a second time before changing the configuration, web pages can be finicky...
-
-the first time you use the app it will tell you where the configuration file is located
+However if that is no the case then you might think about ajusting the configuration values.
 
 `__utils.js/schema` is used to validate the configuration and contains useful comments to explain the variables
 
-### curse addons
-curse addon names go in `addons.curse`
+### ⚡️ CurseForge addons - https://www.curseforge.com/wow/addons
+CurseForge addon names go in `config.addons.curse`.
 
-simply use the name of the extension from the curse site
+To find the name of an addon from the URL :
 ```
 https://www.curseforge.com/wow/addons/plater-nameplates/...
 -> plater-nameplates
 ```
 
-### wowinterface addons
-wowinterface addon names go in `addons.wowinterface`
+### ⚡️ WoWInterface addons - https://www.wowinterface.com/
+WoWInterface addon names go in `config.addons.wowinterface`
 
-simply use the name of the extension from the wowinterface site
+To find the name of an addon from the URL :
 ```
 https://www.wowinterface.com/downloads/info24608-Hekili.html
 https://www.wowinterface.com/downloads/download24608-Hekili
 -> 24608-Hekili
 ```
 
-### tukui, elvui and tukui addons
-having an `elvui: true` array in your `addons.tukui` config section will enable updating elvui
+### ⚡️ Elvui, Tukui and Tukui addons - https://www.tukui.org
+Tukui addon names go in `config.addons.tukui.addons`
 
-having an `tukui: true` array in your `addons.tukui` config section will enable updating tukui
-
-tukui addon ids go in `addons.tukui.addons`
-
-you need the addon id as they do not provide names ( or hashes 😞 )
+To find the name of an addon from the URL :
 ```
 https://www.tukui.org/addons.php?id=137
 -> 137
 ```
+Elvui is enabled by setting `config.addons.tukui.elvui` to `true`.
 
-### tsm and apphelper
-simply having the `addons.tsm` key set to true will update them
+Tukui is enabled by setting `config.addons.tukui.tukui` to `true`.
 
-you still need the [corresponding software though](https://www.tradeskillmaster.com/install)... (for now)
+### ⚡️ TradeSkillMaster and TradeSkillMaster_Apphelper - https://www.tradeskillmaster.com/install
+TradeSkillMaster and TradeSkillMaster_Apphelper are enabled by setting `config.addons.tsm` to `true`.
 
-on linux just run it in the same wine container with the same prefix and everything should work just fine
+Note : you need the [corresponding client](https://www.tradeskillmaster.com/install). (for now)
+
+On linux just run it in the same wine container with the same prefix and everything should work just fine.
 
 
-## todo
+## ✅ Future Plans
 - [ ] classic/retail toggle (currently only retail)
