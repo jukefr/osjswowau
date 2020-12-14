@@ -4,7 +4,7 @@
 - ✨ Detects `Interface/AddOns` folder and **installed addons.**
 - ⬆️ Checks if **updates are available**. 
 - ♻️ **Cross-platform**, supports  **Windows**, **macOs**, **Linux**.
-- 📝 Manage as you please with a **configuration file**.
+- 📝 Manage with a **configuration file**.
 - 🚀 **Parallel** processing of updates.
 - 🕵️ Emulates a **real user**, no rate limiting.
 - 📦 Builds available on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.

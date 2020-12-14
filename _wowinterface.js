@@ -32,10 +32,12 @@ const wowinterfaceLogic = async (config, page, name, bar, tmp, toc, debug, type)
   const version = versionRaw.split("Version:")[1].trim().split(", Classic:")[0];
 
   if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
-    if (bar)
+    if (bar) {
       bar.update(4, {
         filename: `arlready up to date ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
       });
+      bar.stop();
+    }
     return page.close();
   }
 
@@ -51,7 +53,10 @@ const wowinterfaceLogic = async (config, page, name, bar, tmp, toc, debug, type)
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
-  if (bar) bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+  if (bar) {
+    bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+    bar.stop();
+  }
   if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
     appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
     appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);

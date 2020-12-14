@@ -51,10 +51,12 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc, debug, ty
   }
 
   if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
-    if (bar)
+    if (bar) {
       bar.update(4, {
         filename: `arlready up to date ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
       });
+      bar.stop();
+    }
     return page.close();
   }
 
@@ -74,7 +76,10 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc, debug, ty
   await extractFile(config, filename);
   if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
-  if (bar) bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+  if (bar) {
+    bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+    bar.stop();
+  }
   if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
     appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
     appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);
