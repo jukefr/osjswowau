@@ -1,48 +1,60 @@
-const {existsSync, accessSync, constants} = require('fs')
-const {homedir} = require('os')
-const {cd, find} = require('shelljs')
-const {exec} = require('child_process');
-const {join} = require('path')
-const { resolve } = require('path');
-const { readdir } = require('fs').promises;
-const chalk = require('chalk')
+const { existsSync, accessSync, constants } = require("fs");
+const { homedir } = require("os");
+const { cd, find } = require("shelljs");
+const { promisify } = require("util");
+const exec = promisify(require("child_process").exec);
+const { join } = require("path");
+const { resolve } = require("path");
+const { readdir } = require("fs").promises;
+const chalk = require("chalk");
 
 // thats probably not a good practice at all but eh..... it works ?
 let wasDetected = false;
-let detectedAddonPath
+let detectedAddonPath;
 
-const detectAddonsPath = async (dir, ignores = [])  => {
-  if (wasDetected) return detectedAddonPath
-  return readdir(resolve(dir), { withFileTypes: true }).then(dirents => Promise.all(
+const listWindowsDrives = () =>
+  exec("wmic logicaldisk get name").then(({ stdout }) =>
+    stdout
+      .split("\r\r\n")
+      .filter((value) => /[A-Za-z]:/.test(value))
+      .map((value) => value.trim())
+  );
+
+const detectAddonsPath = async (dir, ignores = []) => {
+  if (wasDetected) return detectedAddonPath;
+  return readdir(resolve(dir), { withFileTypes: true }).then((dirents) =>
+    Promise.all(
       dirents.reduce((ac, dirent) => {
-        if (wasDetected) return detectedAddonPath
+        if (wasDetected) return detectedAddonPath;
         const res = resolve(dir, dirent.name);
-        if (res.includes('Interface/AddOns')) {
-          ac.push(res)
-          detectedAddonPath = res
-          wasDetected = true
-          return ac
+        if (res.includes("Interface/AddOns")) {
+          ac.push(res);
+          detectedAddonPath = res;
+          wasDetected = true;
+          return ac;
         }
         if (existsSync(res)) {
           try {
-            accessSync(res, constants.R_OK)
+            accessSync(res, constants.R_OK);
             if (dirent.isDirectory()) {
               if (ignores.reduce((a, ignore) => !res.startsWith(ignore) && a, true)) {
-                ac.push(detectAddonsPath(res))
-                return ac
+                ac.push(detectAddonsPath(res));
+                return ac;
               }
             }
-          } catch(err) {}
+          } catch (err) {}
         }
-        return ac
+        return ac;
       }, [])
-    ))
-}
-
+    )
+  );
+};
 
 const detectLogic = async () => {
-
   // windows
+  if (process.platform.includes("win")) {
+    listWindowsDrives();
+  }
   // test drive exists
   // if drive exsits test in program files
   // if program files test wow...
@@ -54,7 +66,7 @@ const detectLogic = async () => {
   /// Applications/World of Warcraft/
 
   // linux
-  if (process.platform === 'linux') {
+  if (process.platform === "linux") {
     // start with homedir
     // await detectAddonsPath(homedir())
     // then current drive
@@ -63,7 +75,7 @@ const detectLogic = async () => {
     // await detectAddonsPath('/', [ '/proc', '/sys'])
   }
 
-  console.log(chalk.green('detected addon path'), detectedAddonPath)
-}
+  console.log(chalk.green("detected addon path"), detectedAddonPath);
+};
 
-detectLogic()
+detectLogic();
