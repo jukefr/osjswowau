@@ -17,6 +17,8 @@ const listWindowsDrives = () =>
       .split("\r\r\n")
       .filter((value) => /[A-Za-z]:/.test(value))
       .map((value) => value.trim())
+      .filter(drive => existsSync(`${drive  }\\`))
+      .map(drive => `${drive}\\`)
   );
 
 const detectAddonsPath = async (dir, ignores = []) => {
@@ -56,7 +58,7 @@ const detectLogic = async () => {
     await detectAddonsPath(homedir());
     // then drives in general
     const drives = await listWindowsDrives();
-    await Promise.all(drives.map((drive) => detectAddonsPath(`${drive}\\`)));
+    await Promise.all(drives.map((drive) => detectAddonsPath(drive)));
   }
 
   // macos
