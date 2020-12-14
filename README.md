@@ -2,11 +2,12 @@
 **O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
 - ✨ Detects `Interface/AddOns` folder and **installed addons.**
+- ⬆️ Checks if **updates are available**. 
 - ♻️ **Cross-platform**, supports  **Windows**, **macOs**, **Linux**.
-- 📝 **Configuration file**, manage as you please.
-- 🚀 **Concurrent** threads.
+- 📝 Manage as you please with a **configuration file**.
+- 🚀 **Parallel** processing of updates.
 - 🕵️ Emulates a **real user**, no rate limiting.
-- 📦 Builds on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.
+- 📦 Builds available on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.
 
 ![demo gif](https://i.imgur.com/f9BC08g.gif)
 
