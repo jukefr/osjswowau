@@ -1,25 +1,25 @@
 # 💽 osjswowau
 **O**pen **S**ource **J**ava**S**cript **WoW** **A**ddon **U**pdater
 
-- ✨ **Automagically detects addon path and installed addons.**
-- 📝 Manage a **single configuration file** and always be up to date everywhere.
-- ♻️ **Cross-platform** support. (windows/linux/macos/docker)
-- 🚀 Supports **concurrent** threads. (configurable, defaults to 5)
-- 🕵️ Emulates a **real user session** so no rate limiting. (hopefully)
-- 📦 Portable builds available on **[github releases](https://github.com/jukefr/osjswowau/releases)**.
+- ✨ Detects **addon path** and **installed addons.**
+- ♻️ **Cross-platform**, supports  Windows, macOs, Linux.
+- 📝 **Configuration file**, manage as you please.
+- 🚀 Configurable **concurrent** threads.
+- 🕵️ Emulates a **real user session**, no rate limiting hopefully.
+- 📦 Portable builds available on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.
 
 ![demo gif](https://i.imgur.com/f9BC08g.gif)
 
 ## 📦 Installation
-Download from [Github Release](https://github.com/jukefr/osjswowau/releases) and run it.
+Download from [Github Releases](https://github.com/jukefr/osjswowau/releases) and run it. *(recommended)*
 
-Or `npm i -g osjswowau` if you want to use Nodejs.
+`npm i -g osjswowau` if you prefer to use Nodejs.
 
 ## 🗃 Addon Sources
-- **CurseForge addons** (latest version, md5 checked)
-- **WoWInterface addons** (latest version, no hashes available)
-- **Elvui, Tukui and Tukui addons** (latest version, no hashes available)
-- **TradeSkillMaster and TradeSkillMaster_Apphelper** (latest version, no hashes available)
+- **[CurseForge addons](#%EF%B8%8F-curseforge-addons---httpswwwcurseforgecomwowaddons)** (latest version, md5 checked)
+- **[WoWInterface addons](#%EF%B8%8F-wowinterface-addons---httpswwwwowinterfacecom)** (latest version, no hashes available)
+- **[Elvui, Tukui and Tukui addons](#%EF%B8%8F-elvui-tukui-and-tukui-addons---httpswwwtukuiorg)** (latest version, no hashes available)
+- **[TradeSkillMaster and TradeSkillMaster_Apphelper](#%EF%B8%8F-tradeskillmaster-and-tradeskillmaster_apphelper---httpswwwtradeskillmastercom)** (latest version, no hashes available)
 
 
 ## 📝 Configuration
@@ -62,7 +62,7 @@ Elvui is enabled by setting `config.addons.tukui.elvui` to `true`.
 
 Tukui is enabled by setting `config.addons.tukui.tukui` to `true`.
 
-### ⚡️ TradeSkillMaster and TradeSkillMaster_Apphelper - https://www.tradeskillmaster.com/install
+### ⚡️ TradeSkillMaster and TradeSkillMaster_Apphelper - https://www.tradeskillmaster.com
 TradeSkillMaster and TradeSkillMaster_Apphelper are enabled by setting `config.addons.tsm` to `true`.
 
 Note : you need the [corresponding client](https://www.tradeskillmaster.com/install). (for now)
