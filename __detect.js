@@ -277,8 +277,10 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   await cluster.idle();
   updateConf(config, detectedAddons);
 
+  console.log(detectedAddons)
+
   if (detectedAddons) console.log("The following addons were automatically detected :");
-  if (detectedAddons) Object.keys(detectedAddons).map((addon) => ` - ${chalk.green(addon)}`);
+  if (detectedAddons) Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
   if (detectedAddons)
     console.log(chalk.bold("You can still manually edit the config it will also update your additions."));
   if (detectedAddons) console.log();
