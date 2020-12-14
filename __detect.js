@@ -158,7 +158,7 @@ const getWowinterfaceName = async (page, id) => {
       return `${id}-${noom}`;
     }
   }
-  return undefined
+  return undefined;
 };
 
 const getCurseName = async (page, id) => {
@@ -175,7 +175,7 @@ const getCurseName = async (page, id) => {
       return noom;
     }
   }
-  return undefined
+  return undefined;
 };
 
 const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
@@ -242,7 +242,7 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
         [type]: name,
       };
     }
-    return undefined
+    return undefined;
   });
 
   const tocs = await getAddonTocs(config.get("addonPath"));
