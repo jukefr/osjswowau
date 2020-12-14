@@ -12,7 +12,7 @@ const waitFor = (d) =>
 const waitMd5 = async (config, m, name, tmp) => {
   const start = Date.now();
   while (Date.now() - start < config.get("timeout")) {
-    const [fname] = await glob(`${tmp}-${name}/*.zip`.replace(/\\/g, '/'));
+    const [fname] = await glob(`${tmp}-${name}/*.zip`.replace(/\\/g, "/"));
     if (existsSync(fname)) {
       const md5 = await md5File(fname);
       if (md5 === m) {
@@ -29,7 +29,7 @@ const waitFile = async (config, f, m, tmp) => {
   let size;
 
   while (Date.now() - start < config.get("timeout") * 0.67) {
-    const [fname] = await glob(`${tmp}-${m}/*.zip`.replace(/\\/g, '/'));
+    const [fname] = await glob(`${tmp}-${m}/*.zip`.replace(/\\/g, "/"));
     if (existsSync(fname)) {
       if (size && size !== 0 && size === statSync(fname).size) return fname;
       size = statSync(fname).size;
