@@ -1,16 +1,10 @@
 const Conf = require("conf");
-const { join } = require("path");
-const { homedir } = require("os");
 const pkg = require("./package.json");
 
 const schema = {
   fresh: { type: "boolean", default: true }, // used on first start, should remain disabled after
   headless: { type: "boolean", default: true }, // hide chromium windows
   concurrency: { type: "number", maximum: 10, minimum: 1, default: 5 }, // amount of addons that can be updated at the same time ("threads")
-  addonPath: {
-    type: "string",
-    default: join(homedir(), "AddOns"),
-  },
   detectedAddonPath: { type: "string" },
   waitForKey: { type: "boolean", default: !!process.__nexe }, // wait for a key to continue, enabled by default on nexe
   timeout: {

@@ -14,6 +14,7 @@ const { tsmLogic } = require("./_tsm");
 const { wowinterfaceLogic } = require("./_wowinterface");
 const { handleFreshStart, handleError, handleCleanup } = require("./__handlers");
 const pkg = require("./package.json");
+require("events").EventEmitter.defaultMaxListeners = 25;
 
 puppeteer.use(StealthPlugin());
 

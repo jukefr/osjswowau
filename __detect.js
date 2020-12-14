@@ -7,7 +7,7 @@ const { resolve, basename } = require("path");
 const { readdir } = require("fs").promises;
 const chalk = require("chalk");
 const database = require("./__database");
-require('events').EventEmitter.defaultMaxListeners = 50;
+require("events").EventEmitter.defaultMaxListeners = 25;
 
 // thats probably not a good practice at all but eh..... it works ?
 let wasDetected = false;
@@ -112,7 +112,9 @@ const updateConf = (config, addons) => {
   for (const addon in addons) {
     switch (Object.keys(addons[addon])[0]) {
       case "wowinterface":
-        config.set("addons.wowinterface", [...new Set([...config.get("addons.wowinterface"), addons[addon].wowinterface])]);
+        config.set("addons.wowinterface", [
+          ...new Set([...config.get("addons.wowinterface"), addons[addon].wowinterface]),
+        ]);
         break;
       case "curse":
         config.set("addons.curse", [...new Set([...config.get("addons.curse"), addons[addon].curse])]);
@@ -125,8 +127,13 @@ const updateConf = (config, addons) => {
           case -2:
             config.set("addons.tukui.elvui", true);
             break;
+          case -1:
+            config.set("addons.tukui.tukui", true);
+            break;
           default:
-            config.set("addons.tukui.addons", [...new Set([...config.get("addons.tukui.addons"), addons[addon].tukui])]);
+            config.set("addons.tukui.addons", [
+              ...new Set([...config.get("addons.tukui.addons"), addons[addon].tukui]),
+            ]);
         }
         break;
       default:
@@ -136,25 +143,28 @@ const updateConf = (config, addons) => {
 };
 
 const getWowinterfaceName = async (page, id) => {
-  await page.goto(`https://www.google.com/search?q=download${id}-&as_sitesearch=www.wowinterface.com`);
-  await page.waitForSelector("#rso a");
-  const test = await page.$("#rso a");
+  await page.goto(
+    `https://duckduckgo.com/?q=world+of+warcraft+site%3Awww.wowinterface.com+inurl%3Adownloads%2Finfo${id}&t=h_&ia=web`
+  );
+  await page.waitForSelector(".result__a");
+  const test = await page.$(".result__a");
   const url = await (await test.getProperty("href")).jsonValue();
-  return basename(url).replace("download", "");
+  return basename(url).split("info")[1].replace(".html", "");
 };
 
 const getCurseName = async (page, id) => {
-  await page.goto(`https://www.google.com/search?q=files+project+id+${id}&as_sitesearch=www.curseforge.com`);
-  await page.waitForSelector("#rso a");
-  const test = await page.$("#rso a");
+  await page.goto(
+    `https://duckduckgo.com/?q=files+project+id+${id}+site%3Awww.curseforge.com+inurl%3Awow%2Faddons%2F&t=h_&ia=web`
+  );
+  await page.waitForSelector(".result__a");
+  const test = await page.$(".result__a");
   const url = await (await test.getProperty("href")).jsonValue();
   const value = url.replace("https://www.curseforge.com/wow/addons/", "").split("/")[0];
-  if (value === 'https://') return undefined
-  return value
+  return value;
 };
 
 const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
-  if (!config.get("detectedAddonPath")) {
+  if (!config.get("addonPath")) {
     // windows
     if (process.platform.includes("win")) {
       // start with homedir
@@ -184,12 +194,12 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
       await detectAddonsPath("/", ["/proc", "/sys", "/dev"]);
     }
     console.log(chalk.green("detected addon path"), detectedAddonPath);
-    config.set("detectedAddonPath", detectedAddonPath);
+    config.set("addonPath", detectedAddonPath);
   }
 
   const cluster = await Cluster.launch({
-    concurrency: Cluster.CONCURRENCY_BROWSER,
-    maxConcurrency: 3,
+    concurrency: Cluster.CONCURRENCY_PAGE,
+    maxConcurrency: 2, // you can get limited quite fast so we take it easy
     timeout: config.get("timeout"),
     puppeteer,
     puppeteerOptions: {
@@ -201,7 +211,7 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
     },
   });
 
-  const store = []
+  const store = [];
 
   await cluster.task(async ({ page, data: { type, value } }) => {
     await page.setDefaultNavigationTimeout(config.get("timeout"));
@@ -211,36 +221,33 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
       const name = await getCurseName(page, value);
       store.push({
         type,
-        name
-      })
+        name,
+      });
     }
     if (type === "wowinterface") {
       const name = await getWowinterfaceName(page, value);
       store.push({
         type,
-        name
-      })
+        name,
+      });
     }
   });
 
-  const tocs = await getAddonTocs(detectedAddonPath || config.get("detectedAddonPath"));
+  const tocs = await getAddonTocs( config.get("addonPath"));
   const detectedAddons = {};
   for (const toc in tocs) {
     if (tocs[toc]["X-Curse-Project-ID"]) {
-      cluster.queue({type: 'curse', value: tocs[toc]["X-Curse-Project-ID"]})
+      await cluster.queue({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"] });
     } else if (tocs[toc]["X-WoWI-ID"]) {
-      cluster.queue({type: 'wowinterface', value: tocs[toc]["X-WoWI-ID"]})
-    } else {
-      console.log(toc)
-      if (database[toc]) {
-        if (isContainedIn(database[toc].matches, tocs[toc])) {
-          detectedAddons[toc] = database[toc].gives;
-        }
-      } else {
-        // not in db
+      await cluster.queue({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"] });
+    } else if (database[toc]) {
+      if (isContainedIn(database[toc].matches, tocs[toc])) {
+        detectedAddons[toc] = database[toc].gives;
       }
+    } else {
+      // not matched against anything
+      console.log(toc, tocs[toc]);
     }
-
   }
 
   updateConf(config, detectedAddons);
@@ -248,22 +255,23 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug) => {
   await cluster.idle();
 
   for (const addon of store) {
-    switch (addon.type){
-      case 'curse':
+    switch (addon.type) {
+      case "curse":
         config.set("addons.curse", [...new Set([...config.get("addons.curse"), addon.name])]);
-        break
-      case 'wowinterface':
+        break;
+      case "wowinterface":
         config.set("addons.wowinterface", [...new Set([...config.get("addons.wowinterface"), addon.name])]);
-        break
+        break;
       default:
-        throw new Error('shouldnt happen')
+        throw new Error("shouldnt happen");
     }
   }
 
-  console.log("The following addons were detected.");
-  console.log("They will be automatically updated from now on.");
-  Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
+  if (detectedAddons) console.log("The following addons were detected.");
+  if (detectedAddons) console.log("They will be automatically updated from now on.");
+  if (detectedAddons) Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
 
+  return cluster.close();
 };
 
 module.exports = {
