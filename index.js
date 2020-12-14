@@ -38,6 +38,7 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
     const multibar = new cliProgress.MultiBar(
       {
         clearOnComplete: false,
+        forceRedraw: true,
         format: "{filename} - [{bar}] - {percentage}% ({value}/{total}) ",
         hideCursor: true,
         barsize: 20,
