@@ -18,7 +18,8 @@
     "build-windows86": "nexe -t windows-x86-12.9.1 -o dist/osjswowau-windows86 index.js",
     "build-mac64": "nexe -t mac-x64-12.9.1 -o dist/osjswowau-mac64 index.js",
     "build": "concurrently \"npm:build-*\"",
-    "lint": "prettier -w ./*.js",
+    "lint:fix": "prettier -w ./*.js",
+    "lint": "eslint ./*.js",
     "changelog": "auto-changelog -p",
     "test": "nyc ava --verbose --timeout=300s",
     "release": "dotenv release-it -- --ci"
@@ -65,6 +66,7 @@
     },
     "hooks": {
       "before:init": [
+        "npm run lint",
         "npm run test"
       ],
       "after:bump": [
