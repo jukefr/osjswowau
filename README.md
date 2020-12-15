@@ -77,7 +77,7 @@ It also display more information about errors which may be useful for reporting 
 
 To enable the debug mode either set `config.debug` to `true`.
 
-Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswoway`
+Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswowau`
 
 ## ✅ Future Plans
 - [ ] classic/retail toggle (currently only retail)
