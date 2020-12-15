@@ -81,5 +81,6 @@ Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswoway`
 
 ## ✅ Future Plans
 - [ ] classic/retail toggle (currently only retail)
-- [ ] add version compare now that we can parse toc
 - [ ] wireshark the tsm client to see how it gets the latest values
+- [ ] todo implement own bar system that doesnt get fucked when the barArray.length is greater than the console.height....
+- [ ] fix tests
