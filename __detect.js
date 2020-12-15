@@ -191,7 +191,7 @@ const getCurseName = async (page, id) => {
 const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, testing) => {
   if (!config.get("addonPath")) {
     // windows
-    if (process.platform.includes("win")) {
+    if (process.platform === 'win32') {
       // start with homedir
       await detectAddonsPath(homedir(), ["\\Windows", "\\Temp"]);
       // then drives in general
