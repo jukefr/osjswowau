@@ -108,7 +108,12 @@ const extractFile = (config, filename, type, name, version, id) =>
               if (path.endsWith(".toc")) {
                 if (depth === 2) {
                   const tocname = basename(path).replace(".toc", "");
-                  config.set(`detected.${type}.${name}.${tocname}`, {});
+                  config.set(`detected.${type}.${name}.${tocname}`, {
+                    ...config.get(`detected.${type}.${name}.${tocname}`),
+                  });
+                  config.set(`detected.${type}.${name}._paths`, [
+                    ...new Set([...(config.get(`detected.${type}.${name}._paths`) || []), path]),
+                  ]); // seed with toc values
                   config.set(`detected.${type}.${name}._version`, version);
                   config.set(`detected.${type}.${name}._id`, id);
                 }

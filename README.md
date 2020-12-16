@@ -85,3 +85,4 @@ Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswowau`
 - [ ] todo implement own bar system that doesnt get fucked when the barArray.length is greater than the console.height....
 - [ ] streamify everything
 - [ ] remove duplicates from curse/wowinterface now that we have map
+- [ ] add "search" now that we have detection with duckduckgo

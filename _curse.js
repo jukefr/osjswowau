@@ -3,7 +3,7 @@ const chalk = require("chalk");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
-const curseLogic = async (config, page, name, bar, tmp, _, debug) => {
+const curseLogic = async (config, page, name, bar, tmp, toc, debug) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -42,7 +42,7 @@ const curseLogic = async (config, page, name, bar, tmp, _, debug) => {
     version = await (await elNode.getProperty("innerText")).jsonValue();
     if (!version.includes("classic") && !version.includes("Classic")) {
       const configAddon = config.get(`detected.curse.${name}`);
-      const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+      const isUpToDate = toc && configAddon && configAddon._version && configAddon._version === version;
       if (isUpToDate) {
         if (bar) {
           bar.update(4, {

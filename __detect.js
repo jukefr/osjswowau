@@ -153,13 +153,19 @@ const updateConf = (config, addons) => {
         // throw new Error("Tried to update config for a not found type of addon.");
       }
       const { type, uid, tocname, id, ...rest } = addons[addon].osjswowau;
-      config.set(`detected.${type}.${uid}.${tocname}`, { ...rest });
+      config.set(`detected.${type}.${uid}.${tocname}`, {
+        ...config.get(`detected.${type}.${uid}.${tocname}`),
+        ...rest,
+      });
       if (id) config.set(`detected.${type}.${uid}._id`, id);
       if (config.get(`detected.${type}.${uid}._version`) || addons[addon].Version)
         config.set(
           `detected.${type}.${uid}._version`,
           config.get(`detected.${type}.${uid}._version`) || addons[addon].Version
         ); // seed with toc values
+      config.set(`detected.${type}.${uid}._paths`, [
+        ...new Set([...(config.get(`detected.${type}.${uid}._paths`) || []), addons[addon].tocpath]),
+      ]); // seed with toc values
     }
   }
 };
@@ -366,6 +372,7 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   }
 
   await cluster.idle();
+  console.log(augmented);
   updateConf(config, augmented);
 
   if (augmented) {
@@ -419,6 +426,7 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   }
 
   await cluster.close();
+
   return augmented;
 };
 

@@ -72,8 +72,9 @@ const schema = {
             patternProperties: {
               // tocname
               "^_id$": { type: "string" },
+              "^_paths$": { type: "array", items: { type: "string" } },
               "^_version$": { type: "string" },
-              "^(?!_id|_version).*$": {
+              "^(?!_id|_version|_paths).*$": {
                 type: "object",
                 properties: {},
               },
