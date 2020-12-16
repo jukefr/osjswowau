@@ -173,7 +173,7 @@ const getWowinterfaceName = async (page, id) => {
 
 const getCurseName = async (page, id) => {
   await page.goto(
-    `https://duckduckgo.com/?q=files+project+id+${id}+site%3Awww.curseforge.com+inurl%3Awow%2Faddons%2F&t=h_&ia=web`
+    `https://duckduckgo.com/?q=files+project+id+${id}+site%3Awww.curseforge.com+inurl%3Awow%2Faddons%2F+-comment+-page&t=h_&ia=web`
   );
   await page.waitForSelector(".result__a");
   const foo = await page.$$(".result__a");
