@@ -34,7 +34,7 @@ const schema = {
     properties: {
       curse: {
         type: "array",
-        items: { type: "string" },
+        items: { type: "string", pattern: "^[a-z0-9-_.]*$" },
         default: [],
       },
       tukui: {
@@ -44,7 +44,7 @@ const schema = {
           elvui: { type: "boolean", default: false },
           addons: {
             type: "array",
-            items: { type: "string" },
+            items: { type: "string", pattern: "^[0-9-]*$" },
             default: [],
           },
         },
@@ -53,8 +53,33 @@ const schema = {
       tsm: { type: "boolean", default: false },
       wowinterface: {
         type: "array",
-        items: { type: "string" },
+        items: { type: "string", pattern: "^[a-zA-Z0-9-_.]*$" },
         default: [],
+      },
+    },
+    default: {},
+  },
+  detected: {
+    type: "object",
+    patternProperties: {
+      // type
+      ".*": {
+        type: "object",
+        patternProperties: {
+          // uid
+          ".*": {
+            type: "object",
+            patternProperties: {
+              // tocname
+              "^_id$": { type: "string" },
+              "^_version$": { type: "string" },
+              "^(?!_id|_version).*$": {
+                type: "object",
+                properties: {},
+              },
+            },
+          },
+        },
       },
     },
     default: {},
@@ -97,6 +122,9 @@ const migrations = {
       store.set("addons.tukui.elvui", true);
       store.delete("addons.elvui");
     }
+  },
+  "5.0.13": (store) => {
+    store.delete("addonPath");
   },
 };
 

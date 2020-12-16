@@ -6,7 +6,6 @@ const { join } = require("path");
 const { resolve, basename } = require("path");
 const { readdir } = require("fs").promises;
 const chalk = require("chalk");
-const { appendFileSync } = require("fs");
 const database = require("./__database");
 require("events").EventEmitter.defaultMaxListeners = 25;
 
@@ -61,10 +60,13 @@ const tocParser = (filePath) => {
   const contents = readFileSync(filePath, "utf-8");
   for (const line of contents.split(/\r?\n/)) {
     if (line.startsWith("## ") && !line.endsWith("##")) {
+      const [keyRaw, ...valueRaw] = line.split(":");
+      const key = keyRaw.replace("## ", "").trim();
+      const value = valueRaw.join(":").replace(/\r?\n/, "").trim();
       toc = {
         ...toc,
-        path: filePath,
-        [line.split(":")[0].replace("## ", "")]: line.split(":")[1].trim().replace(/\r?\n/, ""),
+        tocpath: filePath,
+        [key]: value,
       };
     }
   }
@@ -120,78 +122,83 @@ const isContainedIn = (a, b) => {
 
 const updateConf = (config, addons) => {
   for (const addon in addons) {
-    if (Object.prototype.hasOwnProperty.call(addons, addon)) {
-      switch (Object.keys(addons[addon])[0]) {
+    if (Object.prototype.hasOwnProperty.call(addons, addon) && !addons[addon].detected) {
+      switch (addons[addon].osjswowau.type) {
         case "wowinterface":
           config.set("addons.wowinterface", [
-            ...new Set([...config.get("addons.wowinterface"), addons[addon].wowinterface]),
+            ...new Set([...config.get("addons.wowinterface"), addons[addon].osjswowau.uid]),
           ]);
           break;
         case "curse":
-          config.set("addons.curse", [...new Set([...config.get("addons.curse"), addons[addon].curse])]);
+          config.set("addons.curse", [...new Set([...config.get("addons.curse"), addons[addon].osjswowau.uid])]);
           break;
         case "tsm":
           config.set("addons.tsm", true);
           break;
         case "tukui":
-          switch (addons[addon][Object.keys(addons[addon])[0]]) {
-            case "-2":
+          switch (addons[addon].osjswowau.uid) {
+            case "elvui":
               config.set("addons.tukui.elvui", true);
               break;
-            case "-1":
+            case "tukui":
               config.set("addons.tukui.tukui", true);
               break;
             default:
               config.set("addons.tukui.addons", [
-                ...new Set([...config.get("addons.tukui.addons"), `${addons[addon].tukui}`]),
+                ...new Set([...config.get("addons.tukui.addons"), `${addons[addon].osjswowau.uid || ""}`]),
               ]);
           }
           break;
         default:
-          throw new Error("This should not happen... I made a code mistake somewhere probably...");
+        // throw new Error("Tried to update config for a not found type of addon.");
       }
+      const { type, uid, tocname, id, ...rest } = addons[addon].osjswowau;
+      config.set(`detected.${type}.${uid}.${tocname}`, { ...rest });
+      if (id) config.set(`detected.${type}.${uid}._id`, id);
+      if (config.get(`detected.${type}.${uid}._version`) || addons[addon].Version)
+        config.set(
+          `detected.${type}.${uid}._version`,
+          config.get(`detected.${type}.${uid}._version`) || addons[addon].Version
+        ); // seed with toc values
     }
   }
 };
 
-const getWowinterfaceName = async (page, id) => {
-  await page.goto(
-    `https://duckduckgo.com/?q=world+of+warcraft+site%3Awww.wowinterface.com+inurl%3Adownloads%2Finfo${id}&t=h_&ia=web`
-  );
-  await page.waitForSelector(".result__a");
-  const foo = await page.$$(".result__a");
-  for (let i = 0; i < foo.length; i += 1) {
-    const hmm = await (await foo[i].getProperty("href")).jsonValue();
-    const noom = hmm.split(`info${id}-`)[1].replace(".html", "");
-    const containsLetters = /[a-zA-Z]/g;
-    if (containsLetters.test(noom)) {
-      return `${id}-${noom}`;
-    }
+const getName = async (page, type, id) => {
+  switch (type) {
+    case "wowinterface":
+      await page.goto(
+        `https://duckduckgo.com/?q=world+of+warcraft+site%3Awww.wowinterface.com+inurl%3Adownloads%2Finfo${id}&t=h_&ia=web`
+      );
+      break;
+    case "curse":
+      await page.goto(
+        `https://duckduckgo.com/?q=files+project+id+${id}+site%3Awww.curseforge.com+inurl%3Awow%2Faddons%2F+-umt_content&t=h_&ia=web`
+      );
+      break;
+    default:
+      throw new Error("Bad type passed to get uid function.");
   }
-  return undefined;
-};
+  await page.waitForSelector(".result__a");
+  const result = await page.$(".result__a");
+  const url = await (await result.getProperty("href")).jsonValue();
 
-const getCurseName = async (page, id) => {
-  await page.goto(
-    `https://duckduckgo.com/?q=files+project+id+${id}+site%3Awww.curseforge.com+inurl%3Awow%2Faddons%2F+-comment+-page&t=h_&ia=web`
-  );
-  await page.waitForSelector(".result__a");
-  const foo = await page.$$(".result__a");
-  for (let i = 0; i < foo.length; i += 1) {
-    const hmm = await (await foo[i].getProperty("href")).jsonValue();
-    const noom = hmm.split(`wow/addons/`)[1].split("/")[0];
-    const containsLetters = /[a-zA-Z]/g;
-    if (containsLetters.test(noom)) {
-      return noom;
-    }
+  if (!url) throw new Error("The resolved url was empty.");
+
+  switch (type) {
+    case "wowinterface":
+      return `${id}-${url.split(`info${id}-`)[1].replace(".html", "")}`;
+    case "curse":
+      return url.split(`wow/addons/`)[1].split("/")[0].split("?")[0].toLowerCase(); // curse project name is case insensitive
+    default:
+      throw new Error("Bad type passed to get uid function.");
   }
-  return undefined;
 };
 
 const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, testing) => {
   if (!config.get("addonPath")) {
     // windows
-    if (process.platform === 'win32') {
+    if (process.platform === "win32") {
       // start with homedir
       await detectAddonsPath(homedir(), ["\\Windows", "\\Temp"]);
       // then drives in general
@@ -240,109 +247,179 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
     },
   });
 
-  await cluster.task(async ({ page, data: { type, value, toc } }) => {
+  await cluster.task(async ({ page, data: { type, value, tocname } }) => {
     await page.setDefaultNavigationTimeout(config.get("timeout"));
     await page.setDefaultTimeout(config.get("timeout"));
+
     if (debug) console.log("getting addon name task", chalk.bold(chalk.yellow(value, type)));
+
+    let foundUid;
     if (type === "curse") {
-      const name = await getCurseName(page, value);
-      appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${[name]}\r\n`);
-      return {
-        [type]: name,
-      };
+      foundUid = await getName(page, "curse", value);
     }
     if (type === "wowinterface") {
-      const name = await getWowinterfaceName(page, value);
-      appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${[name]}\r\n`);
+      foundUid = await getName(page, "wowinterface", value);
+    }
+
+    if (foundUid) {
       return {
-        [type]: name,
+        type,
+        uid: foundUid,
+        tocname,
+        id: value,
       };
     }
-    return undefined;
+
+    throw new Error("Something went wrong with the find name cluster task.");
   });
 
   const tocs = await getAddonTocs(config.get("addonPath"));
-  const detectedAddons = {};
-  const newTocs = {};
+  const augmented = {};
+  const nomatch = {};
   for (const toc in tocs) {
+    // this is beautiful...
     if (Object.prototype.hasOwnProperty.call(tocs, toc)) {
-      if (tocs[toc].OSJSWOWAU) {
-        const [type, ...rest] = tocs[toc].OSJSWOWAU.split("-");
-        const name = { [type]: [...rest].join("-") };
-        detectedAddons[toc] = name;
-        newTocs[name[type]] = {
-          ...name,
+      const check = () => {
+        if (Object.keys(config.get("detected")).length !== 0) {
+          const detected = config.get("detected");
+          for (const [type, typeValues] of Object.entries(detected)) {
+            if (Object.keys(typeValues).length !== 0) {
+              for (const [uid, uidValues] of Object.entries(typeValues)) {
+                if (Object.keys(uidValues).length !== 0) {
+                  for (const [tocname] of Object.entries(uidValues)) {
+                    if (toc === tocname) {
+                      return {
+                        type,
+                        uid,
+                        tocname,
+                      };
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        return false;
+      };
+      const isInConf = check();
+      if (isInConf) {
+        augmented[isInConf.tocname] = {
           ...tocs[toc],
+          osjswowau: isInConf,
+          detected: true,
         };
       } else if (tocs[toc]["X-Curse-Project-ID"]) {
-        const name = tocs[toc].OSJSWOWAU
-          ? { curse: tocs[toc].OSJSWOWAU }
-          : await cluster.execute({ type: "curse", value: tocs[toc]["X-Curse-Project-ID"], toc: tocs[toc] });
-        detectedAddons[toc] = name;
-        newTocs[name.curse] = {
-          ...name,
+        const osjswowau = await cluster.execute({
+          type: "curse",
+          value: tocs[toc]["X-Curse-Project-ID"],
+          toc: tocs[toc],
+          tocname: toc,
+          config,
+        });
+        augmented[osjswowau.tocname] = {
           ...tocs[toc],
+          osjswowau,
         };
       } else if (tocs[toc]["X-WoWI-ID"]) {
-        const name = tocs[toc].OSJSWOWAU
-          ? { wowinterface: tocs[toc].OSJSWOWAU }
-          : await cluster.execute({ type: "wowinterface", value: tocs[toc]["X-WoWI-ID"], toc: tocs[toc] });
-        detectedAddons[toc] = name;
-        newTocs[name.wowinterface] = {
-          ...name,
+        const osjswowau = await cluster.execute({
+          type: "wowinterface",
+          value: tocs[toc]["X-WoWI-ID"],
+          toc: tocs[toc],
+          tocname: toc,
+          config,
+        });
+        augmented[osjswowau.tocname] = {
           ...tocs[toc],
+          osjswowau,
         };
       } else if (tocs[toc]["X-Tukui-ProjectID"]) {
-        const name = { tukui: tocs[toc]["X-Tukui-ProjectID"] };
-        detectedAddons[toc] = name;
-        switch (name.tukui) {
-          case "-2":
-            newTocs.elvui = {
-              ...name,
-              ...tocs[toc],
-            };
-            break;
-          case "-1":
-            newTocs.tukui = {
-              ...name,
-              ...tocs[toc],
-            };
-            break;
-          default:
-            newTocs[name.tukui] = {
-              ...name,
-              ...tocs[toc],
-            };
-        }
-      } else if (tocs[toc].Title.includes("TradeSkillMaster")) {
-        const name = { tsm: true };
-        newTocs.tsm = {
-          ...name,
+        const value = tocs[toc]["X-Tukui-ProjectID"];
+        let uid;
+        if (value === "-2") uid = "elvui";
+        else if (value === "-1") uid = "tukui";
+        else uid = value;
+        const osjswowau = { type: "tukui", uid, tocname: toc };
+        augmented[osjswowau.tocname] = {
           ...tocs[toc],
+          osjswowau,
+        };
+      } else if (tocs[toc].Title.includes("TradeSkillMaster")) {
+        const osjswowau = { type: "tsm", uid: "tsm", tocname: toc };
+        augmented[osjswowau.tocname] = {
+          ...tocs[toc],
+          osjswowau,
         };
       } else if (database[toc]) {
         if (isContainedIn(database[toc].matches, tocs[toc])) {
-          const name = database[toc].gives;
-          detectedAddons[toc] = name;
-          newTocs[name[Object.keys(name)[0]]] = {
-            ...name,
+          const { gives } = database[toc];
+          const type = Object.keys(gives)[0];
+          const uid = gives[type];
+          const osjswowau = { type, uid, tocname: toc };
+          augmented[osjswowau.tocname] = {
             ...tocs[toc],
+            osjswowau,
           };
         }
-      } else if (debug) console.log(toc); // not matched against anything
+      } else nomatch[toc] = tocs[toc]; // not matched against anything
     }
   }
 
   await cluster.idle();
-  updateConf(config, newTocs);
+  updateConf(config, augmented);
 
-  if (detectedAddons) console.log("The following addons were detected :");
-  if (detectedAddons) Object.keys(detectedAddons).map((addon) => console.log(` - ${chalk.green(addon)}`));
-  if (detectedAddons) console.log(chalk.bold("You can edit the config to manually track additions."));
-  if (detectedAddons) console.log();
+  if (augmented) {
+    console.log();
+    console.log(chalk.bold(`Tracked addons :`));
+    const list = [];
+    const uidMap = {};
+    let uids = [];
+    for (const [tocname, addon] of Object.entries(augmented)) {
+      // we usually only want the first result
+      if (!uidMap[addon.osjswowau.uid])
+        uidMap[addon.osjswowau.uid] = { tocname, uid: addon.osjswowau.uid, type: addon.osjswowau.type };
+      uids = [...uids, addon.osjswowau.uid].map((x) => `${x}`);
+    }
+    for (const [uid, values] of Object.entries(uidMap)) {
+      list.push(` - (${values.type}) ${chalk.green(chalk.bold(values.tocname))} [${chalk.italic(uid)}]`);
+    }
+    const curse = config.get("addons.curse").filter((x) => !uids.includes(x));
+    const wowinterface = config.get("addons.wowinterface").filter((x) => !uids.includes(x));
+    const tukui = [
+      ...config.get("addons.tukui.addons").filter((x) => !uids.includes(x)),
+      ...(config.get("addons.tukui.tukui") ? ["tukui"] : []).filter((x) => !uids.includes(x)),
+      ...(config.get("addons.tukui.elvui") ? ["elvui"] : []).filter((x) => !uids.includes(x)),
+    ];
+    const tsm = (config.get("addons.tsm") ? ["tsm"] : []).filter((x) => !uids.includes(x));
+    list.push(...curse.map((addon) => ` - (curse) ${chalk.yellow(chalk.bold(addon))}`));
+    list.push(...wowinterface.map((addon) => ` - (wowinterface) ${chalk.yellow(chalk.bold(addon))}`));
+    list.push(...tukui.map((addon) => ` - (tukui) ${chalk.yellow(chalk.bold(addon))}`));
+    list.push(...tsm.map((addon) => ` - (tsm) ${chalk.yellow(chalk.bold(addon))}`));
+
+    list.map((addon) => console.log(addon));
+
+    const groupedNoMatches = {}; // used to guess what is relevant to show to user
+    for (const [tocname] of Object.entries(augmented)) {
+      Object.keys(nomatch)
+        .filter((toc) => toc.includes(tocname))
+        .forEach((v) => {
+          groupedNoMatches[v] = tocname;
+        });
+    }
+
+    const notFound = Object.entries(nomatch).filter(([k]) => !groupedNoMatches[k]);
+
+    if (Object.keys(notFound).length !== 0) {
+      console.log(chalk.bold("The following addons are either not supported yet, or this is your first run."));
+      console.log(chalk.bold("You can manually specify addons in the configuration file."));
+      notFound.forEach(([key]) => console.log(` - ${chalk.red(chalk.bold(key))}`));
+    }
+
+    console.log();
+  }
 
   await cluster.close();
-  return newTocs;
+  return augmented;
 };
 
 module.exports = {

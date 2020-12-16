@@ -68,16 +68,17 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
       await page.setDefaultNavigationTimeout(config.get("timeout"));
       await page.setDefaultTimeout(config.get("timeout"));
       if (debug) console.log("executing task", chalk.bold(chalk.yellow(value, type)));
-      const bar = debug ? { update: (...msg) => console.log(...msg) } : createBar(multibar, value);
-      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp, tocs[value], debug, type);
-      if (type === "curse") return curseLogic(config, page, value, bar, tmp, tocs[value], debug, type);
-      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp, tocs.tsm, debug, type);
-      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp, tocs[value], debug, type);
+      const bar = debug ? { stop: () => {}, update: (...msg) => console.log(...msg) } : createBar(multibar, value);
+      if (type === "tukui") return tukuiLogic(config, page, value, bar, tmp, tocs, debug, type);
+      if (type === "curse") return curseLogic(config, page, value, bar, tmp, tocs, debug, type);
+      if (type === "tsm") return tsmLogic(config, page, value, bar, tmp, tocs, debug, type);
+      if (type === "wowinterface") return wowinterfaceLogic(config, page, value, bar, tmp, tocs, debug, type);
       return null;
     });
 
     const queue = [];
 
+    console.log(chalk.bold("Updating :"));
     const curse = config.get("addons.curse");
     if (curse && Array.isArray(curse) && curse.length !== 0) {
       curse.map((value) => queue.push({ type: "curse", value }));

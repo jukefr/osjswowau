@@ -1,8 +1,8 @@
 const chalk = require("chalk");
-const { createReadStream, unlinkSync, readFileSync } = require("fs");
+const { createReadStream, unlinkSync, readFileSync, createWriteStream, mkdirSync, existsSync } = require("fs");
 const https = require("https");
 const unzipper = require("unzipper");
-const { join, dirname } = require("path");
+const { join, dirname, basename } = require("path");
 const rimraf = require("rimraf");
 const { createHash } = require("crypto");
 const { BadOsError } = require("./__errors");
@@ -14,7 +14,7 @@ const md5File = (filepath) => {
   return sum.digest("hex");
 };
 
-const createBar = (mb, name) => mb.create(4, 0, { filename: `opening ${chalk.bold(chalk.green(name))}` });
+const createBar = (mb, name) => mb.create(4, 0, { filename: ` - opening ${chalk.bold(chalk.green(name))}` });
 
 const deleteFile = (path) => unlinkSync(path);
 
@@ -79,13 +79,47 @@ const getLatestVersion = async () =>
 
 const deleteTmpDirs = async (tmp) => deleteFolder(`${tmp}*`);
 
-const extractFile = (config, filename) =>
+const makeSurePathExists = (addonPath, zippedPath) => {
+  if (!existsSync(addonPath)) mkdirSync(addonPath);
+  const directories = dirname(zippedPath).split("/");
+  let currentPath = join(addonPath);
+  for (const directory of directories) {
+    currentPath = join(currentPath, directory);
+    if (!existsSync(currentPath)) mkdirSync(currentPath);
+  }
+};
+
+const extractFile = (config, filename, type, name, version, id) =>
   new Promise((resolve, reject) =>
     createReadStream(filename)
       .on("error", (err) => reject(err))
-      .pipe(unzipper.Extract({ path: config.get("addonPath") }))
-      .on("close", (err) => (err ? reject(err) : resolve()))
+      .pipe(unzipper.Parse())
       .on("error", (err) => reject(err))
+      .on("entry", (entry) => {
+        const addonPath = config.get("addonPath");
+        const path = join(addonPath, entry.path);
+        makeSurePathExists(addonPath, entry.path);
+        if (entry.type === "File") {
+          const depth = entry.path.split("/").length;
+          entry
+            .pipe(createWriteStream(path))
+            .on("close", (err) => {
+              if (err) reject(err);
+              if (path.endsWith(".toc")) {
+                if (depth === 2) {
+                  const tocname = basename(path).replace(".toc", "");
+                  config.set(`detected.${type}.${name}.${tocname}`, {});
+                  config.set(`detected.${type}.${name}._version`, version);
+                  config.set(`detected.${type}.${name}._id`, id);
+                }
+              }
+            })
+            .on("error", (err) => reject(err));
+        } else {
+          entry.autodrain(); // should not happen we just want to extract everything
+        }
+      })
+      .on("close", (err) => (err ? reject(err) : resolve()))
   );
 
 module.exports = {

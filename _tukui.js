@@ -1,10 +1,9 @@
 const chalk = require("chalk");
 const { basename } = require("path");
-const { appendFileSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
-const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc, debug, type) => {
+const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -45,15 +44,26 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc, debug, ty
         versionRaw = await (await versionNode.getProperty("innerText")).jsonValue();
         version = versionRaw.trim();
       } else {
-        // version not found
-        version = "THISHOULDNOTMATCHAGAINSANYTHING";
+        // throw new Error('Version for tukui module could not be found.')
       }
+  }
+
+  const configAddon = config.get(`detected.tukui.${name}`);
+  const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+  if (isUpToDate) {
+    if (bar) {
+      bar.update(4, {
+        filename: ` - already latest ${chalk.bold(chalk.green(Object.keys(configAddon)[0]))}`,
+      });
+      bar.stop();
+    }
+    return page.close();
   }
 
   if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
     if (bar) {
       bar.update(4, {
-        filename: `arlready up to date ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
+        filename: ` - already latest ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
       });
       bar.stop();
     }
@@ -70,21 +80,19 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc, debug, ty
       await page.waitForSelector("div.col-md-3:nth-child(3) > a:nth-child(1)");
       await page.click("div.col-md-3:nth-child(3) > a:nth-child(1)");
   }
-  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
+  if (bar) bar.update(1, { filename: ` - downloading ${chalk.bold(chalk.green(name))}` });
   const filename = await waitFile(config, null, name, tmp);
-  if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await extractFile(config, filename);
-  if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await waitFor(250); // chrome is a bitch and think that download isnt over even when i already validated md5...
+  await page.close();
+  if (bar) bar.update(2, { filename: ` - extracting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await extractFile(config, filename, "tukui", name, version, name);
+  if (bar) bar.update(3, { filename: ` - deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) {
-    bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+    bar.update(4, { filename: ` - updated ${chalk.bold(chalk.green(basename(filename)))}` });
     bar.stop();
   }
-  if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
-    appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
-    appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);
-  }
-  return page.close();
+  return Promise.resolve();
 };
 
 module.exports = {

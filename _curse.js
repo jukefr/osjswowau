@@ -1,10 +1,9 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { appendFileSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
-const curseLogic = async (config, page, name, bar, tmp, toc, debug, type) => {
+const curseLogic = async (config, page, name, bar, tmp, _, debug) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -29,23 +28,31 @@ const curseLogic = async (config, page, name, bar, tmp, toc, debug, type) => {
     }
   }
 
+  const selector = "div.mb-3:nth-child(2) > div:nth-child(1) > span:nth-child(2)";
+  await page.waitForSelector(selector);
+  const idNode = await page.$(selector);
+  const projectId = await (await idNode.getProperty("innerText")).jsonValue();
+
   let version;
   await page.waitForSelector(".listing tbody tr");
   const fileListNodes = await page.$$(".listing tbody tr");
   for (const node of fileListNodes) {
     const el = node.asElement();
     const elNode = await el.$("td:nth-child(2) > a:nth-child(1)");
-    version = (await (await elNode.getProperty("innerText")).jsonValue()) || "NOVERSIONWASDETECTED";
+    version = await (await elNode.getProperty("innerText")).jsonValue();
     if (!version.includes("classic") && !version.includes("Classic")) {
-      if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
+      const configAddon = config.get(`detected.curse.${name}`);
+      const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+      if (isUpToDate) {
         if (bar) {
           bar.update(4, {
-            filename: `arlready up to date ${chalk.bold(chalk.green(basename(toc.path).replace(".toc", "")))}`,
+            filename: ` - already latest ${chalk.bold(chalk.green(Object.keys(configAddon)[0]))}`,
           });
           bar.stop();
         }
         return page.close();
       }
+
       await el.click("td:nth-child(2) > a:nth-child(1)");
       break;
     }
@@ -57,21 +64,19 @@ const curseLogic = async (config, page, name, bar, tmp, toc, debug, type) => {
     page.click("article.box > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > a:nth-child(1)"),
     page.waitForNavigation(),
   ]);
-  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
+  if (bar) bar.update(1, { filename: ` - downloading ${chalk.bold(chalk.green(name))}` });
   const [, filename] = await Promise.all([page.click("p.text-sm > a:nth-child(1)"), waitMd5(config, md5, name, tmp)]);
-  if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await extractFile(config, filename);
-  if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await waitFor(250); // chrome is a bitch and think that download isnt over even when i already validated md5...
+  await page.close();
+  if (bar) bar.update(2, { filename: ` - extracting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await extractFile(config, filename, "curse", name, version, projectId);
+  if (bar) bar.update(3, { filename: ` - deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) {
-    bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+    bar.update(4, { filename: ` - updated ${chalk.bold(chalk.green(basename(filename)))}` });
     bar.stop();
   }
-  if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
-    appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
-    appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);
-  }
-  return page.close();
+  return Promise.resolve();
 };
 
 module.exports = {

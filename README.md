@@ -83,4 +83,5 @@ Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswowau`
 - [ ] classic/retail toggle (currently only retail)
 - [ ] wireshark the tsm client to see how it gets the latest values
 - [ ] todo implement own bar system that doesnt get fucked when the barArray.length is greater than the console.height....
-- [ ] fix tests
+- [ ] streamify everything
+- [ ] remove duplicates from curse/wowinterface now that we have map

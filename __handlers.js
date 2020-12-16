@@ -41,6 +41,7 @@ const handleCleanup = async (config) => {
   const latest = await getLatestVersion();
   if (latest) {
     const latestName = latest.name.replace("v", "");
+    console.log();
     console.log(chalk.bold(chalk.green("osjswowau")), `v${chalk.bold(pkg.version)}`, "finished");
     if (`${latestName}` !== `${pkg.version}`) {
       console.log("");

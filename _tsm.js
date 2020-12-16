@@ -1,10 +1,9 @@
 const { basename } = require("path");
 const chalk = require("chalk");
-const { appendFileSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
-const tsmLogic = async (config, page, name = "tsm", bar, tmp, toc, debug, type) => {
+const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
   await page._client.send("Page.setDownloadBehavior", {
     behavior: "allow",
     downloadPath: `${tmp}-${name}`,
@@ -17,12 +16,12 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp, toc, debug, type) 
   const versionRaw = await (await versionNode.getProperty("innerText")).jsonValue();
   const version = versionRaw.replace("TradeSkillMaster v", "").replace(" Changelog", "").trim();
 
-  if (toc && toc.Version && (version.includes(toc.Version) || toc.Version.includes(version))) {
+  const configAddon = config.get(`detected.tsm.${name}`);
+  const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+  if (isUpToDate) {
     if (bar) {
       bar.update(4, {
-        filename: `arlready up to date ${chalk.bold(
-          chalk.green(name === "tsm" ? "TradeSkillMaster" : "TradeSkillMaster_AppHelper")
-        )}`,
+        filename: ` - already latest ${chalk.bold(chalk.green(Object.keys(configAddon)[0]))}`,
       });
       bar.stop();
     }
@@ -34,7 +33,7 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp, toc, debug, type) 
   });
 
   await waitFor(config.get("delay"));
-  if (bar) bar.update(1, { filename: `downloading ${chalk.bold(chalk.green(name))}` });
+  if (bar) bar.update(1, { filename: ` - downloading ${chalk.bold(chalk.green(name))}` });
   let filename;
   if (name === "tsm") {
     [, filename] = await Promise.all([
@@ -47,19 +46,17 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp, toc, debug, type) 
       waitFile(config, null, name, tmp),
     ]);
   }
-  if (bar) bar.update(2, { filename: `extracting ${chalk.bold(chalk.green(basename(filename)))}` });
-  await extractFile(config, filename);
-  if (bar) bar.update(3, { filename: `deleting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await waitFor(250); // chrome is a bitch and think that download isnt over even when i already validated md5...
+  await page.close();
+  if (bar) bar.update(2, { filename: ` - extracting ${chalk.bold(chalk.green(basename(filename)))}` });
+  await extractFile(config, filename, "tsm", name, version, name);
+  if (bar) bar.update(3, { filename: ` - deleting ${chalk.bold(chalk.green(basename(filename)))}` });
   await deleteFile(filename);
   if (bar) {
-    bar.update(4, { filename: `updated ${chalk.bold(chalk.green(basename(filename)))}` });
+    bar.update(4, { filename: ` - updated ${chalk.bold(chalk.green(basename(filename)))}` });
     bar.stop();
   }
-  if (toc && (!version.includes(toc.Version) || !toc.Version.includes(version))) {
-    appendFileSync(toc.path, `\r\n## Version: ${version}\r\n`);
-    appendFileSync(toc.path, `\r\n## OSJSWOWAU: ${type}-${name}\r\n`);
-  }
-  return page.close();
+  return Promise.resolve();
 };
 
 module.exports = {
