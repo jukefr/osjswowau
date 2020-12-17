@@ -6,7 +6,7 @@ const { existsSync } = require("fs");
 const { Cluster } = require("puppeteer-cluster");
 const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-const { deleteTmpDirs, getChromium, createBar } = require("./__utils");
+const { deleteTmpDirs, getChromium, createBar, shuffleArray } = require("./__utils");
 const { getConf } = require("./__conf");
 const { tukuiLogic } = require("./_tukui");
 const { curseLogic } = require("./_curse");
@@ -102,8 +102,10 @@ const main = async (testing = process.argv[2] || false, exit = process.argv[3] |
       ["helper", "tsm"].map((value) => queue.push({ type: "tsm", value }));
     }
 
+    const shuffledQueue = shuffleArray(queue); // we dont want to bottleneck a single site
+
     try {
-      await Promise.all(queue.map((v) => cluster.execute(v)));
+      await Promise.all(shuffledQueue.map((v) => cluster.execute(v)));
     } catch (err) {
       await cluster.close();
       await handleError(err, config, debug, testing, exit);

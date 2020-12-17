@@ -372,7 +372,6 @@ const detectLogic = async (config, Cluster, puppeteer, revisionInfo, debug, test
   }
 
   await cluster.idle();
-  console.log(augmented);
   updateConf(config, augmented);
 
   if (augmented) {
