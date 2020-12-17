@@ -43,7 +43,7 @@ const curseLogic = async (config, page, name, bar, tmp, toc, debug) => {
     version = await (await elNode.getProperty("innerText")).jsonValue();
     if (!version.includes("classic") && !version.includes("Classic")) {
       const configAddon = config.get(`detected.curse.${name}`);
-      const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+      const pathsExist = ((configAddon && configAddon._paths) || []).every((path) => existsSync(path));
       const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
       if (isUpToDate) {
         if (bar) {

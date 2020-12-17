@@ -18,7 +18,7 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
   const version = versionRaw.replace("TradeSkillMaster v", "").replace(" Changelog", "").trim();
 
   const configAddon = config.get(`detected.tsm.${name}`);
-  const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+  const pathsExist = ((configAddon && configAddon._paths) || []).every((path) => existsSync(path));
   const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
   if (isUpToDate) {
     if (bar) {

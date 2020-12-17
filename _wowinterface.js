@@ -32,7 +32,7 @@ const wowinterfaceLogic = async (config, page, name, bar, tmp, _, debug) => {
   const version = versionRaw.split("Version:")[1].trim().split(", Classic:")[0];
 
   const configAddon = config.get(`detected.wowinterface.${name}`);
-  const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+  const pathsExist = ((configAddon && configAddon._paths) || []).every((path) => existsSync(path));
   const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
   if (isUpToDate) {
     if (bar) {
