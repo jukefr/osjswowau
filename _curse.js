@@ -1,5 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
+const { existsSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitMd5, waitFor } = require("./__wait");
 
@@ -42,7 +43,8 @@ const curseLogic = async (config, page, name, bar, tmp, toc, debug) => {
     version = await (await elNode.getProperty("innerText")).jsonValue();
     if (!version.includes("classic") && !version.includes("Classic")) {
       const configAddon = config.get(`detected.curse.${name}`);
-      const isUpToDate = toc && configAddon && configAddon._version && configAddon._version === version;
+      const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+      const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
       if (isUpToDate) {
         if (bar) {
           bar.update(4, {

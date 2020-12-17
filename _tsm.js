@@ -1,5 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
+const { existsSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
@@ -17,7 +18,8 @@ const tsmLogic = async (config, page, name = "tsm", bar, tmp) => {
   const version = versionRaw.replace("TradeSkillMaster v", "").replace(" Changelog", "").trim();
 
   const configAddon = config.get(`detected.tsm.${name}`);
-  const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+  const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+  const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
   if (isUpToDate) {
     if (bar) {
       bar.update(4, {

@@ -1,5 +1,6 @@
 const chalk = require("chalk");
 const { basename } = require("path");
+const { existsSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
@@ -49,7 +50,8 @@ const tukuiLogic = async (config, page, name = "tukui", bar, tmp, toc) => {
   }
 
   const configAddon = config.get(`detected.tukui.${name}`);
-  const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+  const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+  const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
   if (isUpToDate) {
     if (bar) {
       bar.update(4, {

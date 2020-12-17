@@ -9,7 +9,7 @@
 - 🕵️ Emulates a **real user**, no rate limiting.
 - 📦 Builds available on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.
 
-![demo gif](https://i.imgur.com/IgHhkTQ.gif)
+![demo gif](https://i.imgur.com/7U3tzFt.gif)
 
 ## 📦 Installation
 Download from [Github Releases](https://github.com/jukefr/osjswowau/releases) and run it. *(recommended)*
@@ -86,3 +86,4 @@ Or run the command with the `DEBUG` environment variable : `DEBUG=1 osjswowau`
 - [ ] streamify everything
 - [ ] remove duplicates from curse/wowinterface now that we have map
 - [ ] add "search" now that we have detection with duckduckgo
+- [ ] checksum on extract to check versions matchs/addon integrity

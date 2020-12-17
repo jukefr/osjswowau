@@ -1,5 +1,6 @@
 const { basename } = require("path");
 const chalk = require("chalk");
+const { existsSync } = require("fs");
 const { extractFile, deleteFile } = require("./__utils");
 const { waitFile, waitFor } = require("./__wait");
 
@@ -31,7 +32,8 @@ const wowinterfaceLogic = async (config, page, name, bar, tmp, _, debug) => {
   const version = versionRaw.split("Version:")[1].trim().split(", Classic:")[0];
 
   const configAddon = config.get(`detected.wowinterface.${name}`);
-  const isUpToDate = configAddon && configAddon._version && configAddon._version === version;
+  const pathsExist = (configAddon._paths || []).every((path) => existsSync(path));
+  const isUpToDate = pathsExist && configAddon && configAddon._version && configAddon._version === version;
   if (isUpToDate) {
     if (bar) {
       bar.update(4, {
