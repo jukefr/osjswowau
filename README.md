@@ -9,7 +9,7 @@
 - 🕵️ Emulates a **real user**, no rate limiting.
 - 📦 Builds available on **[Github Releases](https://github.com/jukefr/osjswowau/releases)**.
 
-![demo gif](https://i.imgur.com/7U3tzFt.gif)
+![demo gif](https://i.imgur.com/I84517Q.gif)
 
 ## 📦 Installation
 Download from [Github Releases](https://github.com/jukefr/osjswowau/releases) and run it. *(recommended)*
