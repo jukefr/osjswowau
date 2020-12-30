@@ -55,7 +55,7 @@ const detectAddonsPath = async (dir, ignores = []) => {
       )
     );
   } catch (err) {
-    // eh
+    return detectedAddonPath
   }
 };
 
