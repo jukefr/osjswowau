@@ -25,34 +25,38 @@ const listWindowsDrives = () =>
 
 const detectAddonsPath = async (dir, ignores = []) => {
   if (wasDetected) return detectedAddonPath;
-  return readdir(dir, { withFileTypes: true }).then((dirents) =>
-    Promise.all(
-      dirents.reduce((ac, dirent) => {
-        if (wasDetected) return detectedAddonPath;
-        const res = resolve(dir, dirent.name);
-        if (res.includes(join("Interface", "AddOns"))) {
-          ac.push(res);
-          detectedAddonPath = res;
-          wasDetected = true;
-          return ac;
-        }
-        if (existsSync(res)) {
-          try {
-            accessSync(res, constants.R_OK);
-            if (dirent.isDirectory()) {
-              if (ignores.reduce((a, ignore) => !res.includes(ignore) && a, true)) {
-                ac.push(detectAddonsPath(res));
-                return ac;
-              }
-            }
-          } catch (err) {
+  try {
+    return readdir(dir, { withFileTypes: true }).then((dirents) =>
+      Promise.all(
+        dirents.reduce((ac, dirent) => {
+          if (wasDetected) return detectedAddonPath;
+          const res = resolve(dir, dirent.name);
+          if (res.includes(join("Interface", "AddOns"))) {
+            ac.push(res);
+            detectedAddonPath = res;
+            wasDetected = true;
             return ac;
           }
-        }
-        return ac;
-      }, [])
-    )
-  );
+          if (existsSync(res)) {
+            try {
+              accessSync(res, constants.R_OK);
+              if (dirent.isDirectory()) {
+                if (ignores.reduce((a, ignore) => !res.includes(ignore) && a, true)) {
+                  ac.push(detectAddonsPath(res));
+                  return ac;
+                }
+              }
+            } catch (err) {
+              return ac;
+            }
+          }
+          return ac;
+        }, [])
+      )
+    );
+  } catch (err) {
+    // eh
+  }
 };
 
 const tocParser = (filePath) => {
